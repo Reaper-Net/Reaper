@@ -65,7 +65,7 @@ namespace Reaper.SourceGenerator
                     var isRequest = true;
                     if (baseClass.TypeArguments.Length == 1)
                     {
-                        if (reaperResponseOnly.Equals(baseClass, SymbolEqualityComparer.Default))
+                        if (reaperResponseOnly.Name == baseClass.Name)
                         {
                             isRequest = false;
                         }
