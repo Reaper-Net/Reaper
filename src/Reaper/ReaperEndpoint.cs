@@ -6,13 +6,17 @@ namespace Reaper;
 public interface IReaperEndpointHasRequest {}
 public interface IReaperEndpointHasResponse {}
 
-public abstract class ReaperEndpointBase
+public interface IReaperEndpoint
+{
+    void SetContextProvider(IReaperExecutionContextProvider provider);
+}
+
+public abstract class ReaperEndpointBase : IReaperEndpoint
 {
     private IReaperExecutionContextProvider? reaperExecutionContextProvider;
 
     public void SetContextProvider(IReaperExecutionContextProvider provider)
     {
-        Console.WriteLine("Setting Context Provider");
         reaperExecutionContextProvider = provider;
     }
     

@@ -92,7 +92,7 @@ namespace Reaper.SourceGenerator
                     var attrs = classSymbol.GetAttributes();
                     foreach (var attr in attrs)
                     {
-                        Console.WriteLine(attr.AttributeClass.Name);
+                        //Console.WriteLine(attr.AttributeClass.Name);
                         if (reaperRouteAttribute.Equals(attr.AttributeClass, SymbolEqualityComparer.Default))
                         {
                             verb = attr.ConstructorArguments[0].Value.ToString();
@@ -230,7 +230,7 @@ namespace Reaper.SourceGenerator
                 
                 foreach (var endpoint in validEndpoints)
                 {
-                    Console.WriteLine(endpoint.TypeName + " req: " + endpoint.RequestTypeName + " res: " + endpoint.ResponseTypeName);
+                    //Console.WriteLine(endpoint.TypeName + " req: " + endpoint.RequestTypeName + " res: " + endpoint.ResponseTypeName);
                     if (endpoint.RequiresReaperHandler || (endpoint.RequestTypeName == null && endpoint.ResponseTypeName == null))
                     {
                         p($"ReaperMapper.MapEndpoint<", 3);

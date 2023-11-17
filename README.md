@@ -25,17 +25,6 @@ larger services, FastEndpoints is still used and is likely a much better choice.
 
 So is Reaper good for you? As with everything in development, it depends.
 
-## Prerelease notice
-
-Reaper is currently in prerelease. It may or may not support everything you need. It may or may not be stable. It may or
-may not be a good idea to use it in production.
-
-Code is messy AF right now. What's committed is a first prototype. It's not pretty, but it works right now. This will be
-tidied up in due course.
-
-We are building Reaper alongside our own microservice requirements, yet intend for it to be more general purpose in the
-future. If you have any feedback, please feel free to open an issue or PR.
-
 ## Getting Started
 
 Reaper only supports .NET 8+.
@@ -146,3 +135,14 @@ var svc = Context.RequestServices.GetRequiredService<IMyService>();
 - [ ] Support for [FluentValidation](https://github.com/FluentValidation/FluentValidation)
 - [ ] Support for [MessagePack](https://github.com/MessagePack-CSharp/MessagePack-CSharp)
 - [ ] Support for [MemoryPack](https://github.com/Cysharp/MemoryPack)
+
+## Prerelease notice
+
+Reaper is currently in prerelease. It may or may not support everything you need. It may or may not be stable. It may or
+may not be a good idea to use it in production.
+
+Code is messy right now. What's committed is an early proof of concept. It's not pretty but it works. This will be
+tidied up in due course.
+
+We are building Reaper alongside our own microservice requirements which are currently running in production. If you
+have any feedback, please feel free to open an issue or PR.
