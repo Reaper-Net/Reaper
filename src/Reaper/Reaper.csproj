@@ -1,0 +1,27 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <OutputType>Library</OutputType>
+        <IsPackable>true</IsPackable>
+        <PackageId>Reaper.Core</PackageId>
+        <RepositoryUrl>https://github.com/Reaper-Net/Reaper</RepositoryUrl>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+        <PackageTags>reaper,mvc,minimalapis,minimal,repr</PackageTags>
+        <Description>
+            Provides the REPR pattern for Minimal APIs, sorta.
+        </Description>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+        <MinVerMinimumMajorMinor>0.1</MinVerMinimumMajorMinor>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <FrameworkReference Include="Microsoft.AspNetCore.App"/>
+    </ItemGroup>
+    <ItemGroup>
+        <None Include="..\..\README.md" Pack="true" PackagePath="\" />
+    </ItemGroup>
+
+</Project>

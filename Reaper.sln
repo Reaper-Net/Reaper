@@ -1,0 +1,22 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Reaper", "src\Reaper\Reaper.csproj", "{4EA32884-C315-405F-AF6B-3CE9AFB0B717}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Reaper.SourceGenerator", "src\Reaper.SourceGenerator\Reaper.SourceGenerator.csproj", "{3BF323A5-E703-40EC-B7A3-51BF85EDE27D}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{4EA32884-C315-405F-AF6B-3CE9AFB0B717}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4EA32884-C315-405F-AF6B-3CE9AFB0B717}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4EA32884-C315-405F-AF6B-3CE9AFB0B717}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4EA32884-C315-405F-AF6B-3CE9AFB0B717}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3BF323A5-E703-40EC-B7A3-51BF85EDE27D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3BF323A5-E703-40EC-B7A3-51BF85EDE27D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3BF323A5-E703-40EC-B7A3-51BF85EDE27D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3BF323A5-E703-40EC-B7A3-51BF85EDE27D}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
