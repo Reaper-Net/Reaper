@@ -9,6 +9,7 @@
         <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
         <OutputType>Library</OutputType>
         <IsPackable>true</IsPackable>
+        <IncludeBuildOutput>false</IncludeBuildOutput>
         <PackageId>Reaper.SourceGenerator</PackageId>
         <RepositoryUrl>https://github.com/Reaper-Net/Reaper</RepositoryUrl>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>

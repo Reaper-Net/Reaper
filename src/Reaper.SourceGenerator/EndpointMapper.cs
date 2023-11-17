@@ -12,10 +12,6 @@ namespace Reaper.SourceGenerator
     {
         public void Initialize(IncrementalGeneratorInitializationContext context)
         {
-            context.RegisterPostInitializationOutput(ctx => ctx.AddSource(
-                "Something.g.cs",
-                SourceText.From(StaticGeneration.Attribute, Encoding.UTF8)));
-            
             var reaperEndpointClasses = context.SyntaxProvider
                 .CreateSyntaxProvider(
                     predicate: static (s, _) => Matcher(s),
