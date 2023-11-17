@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
 using System.Text.Json.Serialization.Metadata;
 using Microsoft.AspNetCore.Http;
 
@@ -6,6 +7,7 @@ namespace Reaper.MinimalSupport;
 
 public static class ResponseHelpers
 {
+    [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
     public static Task ExecuteReturnAsync<T>(object? obj, HttpContext httpContext, JsonTypeInfo<T?> jsonTypeInfo)
     {
         if (obj is IResult r)

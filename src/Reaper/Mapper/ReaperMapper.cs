@@ -106,13 +106,10 @@ public static class ReaperMapper
             {
                 var metadata = inferredMetadataResult?.EndpointMetadata ?? ReadOnlyCollection<object>.Empty;
 
-                RequestDelegate handler = async (HttpContext ctx) =>
-                {
-                    var ep = ctx.RequestServices.GetRequiredService<TEndpoint>();
-                    await ((Func<TEndpoint, Task>)del)(ep);
-                };
-
-                return new RequestDelegateResult(handler, metadata);
+                var serviceProvider = options.ServiceProvider ?? options.EndpointBuilder.ApplicationServices;
+                ReaperEndpoint ep = (serviceProvider.GetRequiredService<TEndpoint>() as ReaperEndpoint)!;
+                Task Handler(HttpContext _) => ep.HandleAsync();
+                return new RequestDelegateResult(Handler, metadata);
             };
         } else if (builder.RequestType != null && builder.ResponseType == null)
         {
@@ -145,22 +142,24 @@ public static class ReaperMapper
             createRequestDelegate = (del, options, inferredMetadataResult) =>
             {
                 var metadata = inferredMetadataResult?.EndpointMetadata ?? ReadOnlyCollection<object>.Empty;
-                var serviceProvider = options.ServiceProvider ?? options.EndpointBuilder.ApplicationServices;
+                var serviceProvider = options.ServiceProvider ?? options.EndpointBuilder!.ApplicationServices;
                 var logOrThrowExceptionHelper = new LogOrThrowExceptionHelper(serviceProvider, options);
                 var jsonOptions = serviceProvider?.GetService<IOptions<JsonOptions>>()?.Value ?? FallbackJsonOptions;
                 var jsonSerializerOptions = jsonOptions.SerializerOptions;
                 jsonSerializerOptions.MakeReadOnly();
-                
-                RequestDelegate handler = async (HttpContext ctx) =>
+                var jsonTypeInfoResponse = (JsonTypeInfo<TResponse?>)jsonSerializerOptions.GetTypeInfo(typeof(TResponse));
+                if (typeof(TResponse) == typeof(string))
                 {
-                    var ep = ctx.RequestServices.GetRequiredService<TEndpoint>();
-                    
-                    var jsonTypeInfoResponse = (JsonTypeInfo<TResponse?>)jsonSerializerOptions.GetTypeInfo(typeof(TResponse));
-                    var res = await ((Func<TEndpoint, Task<TResponse>>)del)(ep);
-                    await ResponseHelpers.ExecuteReturnAsync(res, ctx, jsonTypeInfoResponse);
-                };
-
-                return new RequestDelegateResult(handler, metadata);
+                    ReaperEndpointXR<string> ep = (serviceProvider!.GetRequiredService<TEndpoint>() as ReaperEndpointXR<string>)!;
+                    async Task Handler(HttpContext ctx) => await ctx.Response.WriteAsync(await ep.HandleAsync());
+                    return new RequestDelegateResult(Handler, metadata);
+                }
+                else
+                {
+                    ReaperEndpointXR<TResponse> ep = (serviceProvider!.GetRequiredService<TEndpoint>() as ReaperEndpointXR<TResponse>)!;
+                    async Task Handler(HttpContext ctx) => await ResponseHelpers.ExecuteReturnAsync(await ep.HandleAsync(), ctx, jsonTypeInfoResponse);
+                    return new RequestDelegateResult(Handler, metadata);
+                }
             };
         }
         else
