@@ -1,0 +1,42 @@
+name: Publish 🚀
+
+on:
+  push:
+    #tags:
+    #  - "[0-9]+.[0-9]+.[0-9]+"
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+
+    - name: Install .NET
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: 8.0.x
+        
+    - name: Restore dependencies
+      run: dotnet restore
+
+    #- name: Test
+    #  id: test
+    #  run: dotnet test
+      
+    - name: Build & Package
+      id: build
+    #  if: steps.test.outcome == 'success'
+      run: dotnet pack -c Release --no-restore
+      
+    - name: Publish Reaper
+      if: steps.build.outcome == 'success'
+      run: dotnet nuget push ./src/Reaper/bin/Release/*.nupkg --api-key ${{secrets.NUGET_PAT}} --skip-duplicate -s https://api.nuget.org/v3/index.json
+
+      
+    - name: Publish Source Generator
+      if: steps.build.outcome == 'success'
+      run: dotnet nuget push ./src/Reaper.SourceGenerator/bin/Release/*.nupkg --api-key ${{secrets.NUGET_PAT}} --skip-duplicate -s https://api.nuget.org/v3/index.json
