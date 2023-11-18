@@ -24,4 +24,20 @@ public class ReaperEndpointXRTests(WafTextFixture fixture) : IClassFixture<WafTe
         Assert.Equal(HttpStatusCode.OK, resp.StatusCode);
         Assert.Equal("Hello, World!", str);
     }
+    
+    [Fact]
+    public async Task ScopedServiceEndpointIsWriting()
+    {
+        var expected = "Hello, World! Counter: 1";
+        var resp = await fixture.Client.GetAsync("/rexr/service");
+        var str = await resp.Content.ReadAsStringAsync();
+        Assert.Equal(HttpStatusCode.OK, resp.StatusCode);
+        Assert.Equal(expected, str);
+        
+        // Scoped test
+        resp = await fixture.Client.GetAsync("/rexr/service");
+        str = await resp.Content.ReadAsStringAsync();
+        Assert.Equal(HttpStatusCode.OK, resp.StatusCode);
+        Assert.Equal(expected, str);
+    }
 }

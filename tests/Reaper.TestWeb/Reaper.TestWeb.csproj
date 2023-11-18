@@ -14,13 +14,9 @@
       <ProjectReference Include="..\..\src\Reaper\Reaper.csproj" />
       <ProjectReference Include="..\..\src\Reaper.SourceGenerator\Reaper.SourceGenerator.csproj" ReferenceOutputAssembly="false" OutputItemType="Analyzer" />
     </ItemGroup>
-
-    <ItemGroup>
-      <Folder Include="Endpoints\ReaperEndpointRX\" />
-      <Folder Include="Endpoints\ReaperEndpoint`ReqResp\" />
-    </ItemGroup>
     
     <ItemGroup>
+        <None Include="$(CompilerGeneratedFilesOutputPath)/**/*.cs" />
         <Compile Remove="$(CompilerGeneratedFilesOutputPath)/**/*.cs" />
     </ItemGroup>
 
