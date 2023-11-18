@@ -4,6 +4,14 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Reaper", "src\Reaper\Reaper
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Reaper.SourceGenerator", "src\Reaper.SourceGenerator\Reaper.SourceGenerator.csproj", "{3BF323A5-E703-40EC-B7A3-51BF85EDE27D}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{4E11526E-A855-40DB-BC78-24C0B503BE76}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Reaper.TestWeb", "tests\Reaper.TestWeb\Reaper.TestWeb.csproj", "{12413687-45BD-4B12-93DD-5118AA6B1BE8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IntegrationTests", "tests\IntegrationTests\IntegrationTests.csproj", "{20BADD15-9140-4B56-A63B-FA624786F65D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTests", "tests\UnitTests\UnitTests.csproj", "{41150D2A-2666-48A1-8286-C94EE827147C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -18,5 +26,22 @@ Global
 		{3BF323A5-E703-40EC-B7A3-51BF85EDE27D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3BF323A5-E703-40EC-B7A3-51BF85EDE27D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3BF323A5-E703-40EC-B7A3-51BF85EDE27D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{12413687-45BD-4B12-93DD-5118AA6B1BE8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{12413687-45BD-4B12-93DD-5118AA6B1BE8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{12413687-45BD-4B12-93DD-5118AA6B1BE8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{12413687-45BD-4B12-93DD-5118AA6B1BE8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{20BADD15-9140-4B56-A63B-FA624786F65D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{20BADD15-9140-4B56-A63B-FA624786F65D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{20BADD15-9140-4B56-A63B-FA624786F65D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{20BADD15-9140-4B56-A63B-FA624786F65D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{41150D2A-2666-48A1-8286-C94EE827147C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{41150D2A-2666-48A1-8286-C94EE827147C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{41150D2A-2666-48A1-8286-C94EE827147C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{41150D2A-2666-48A1-8286-C94EE827147C}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{12413687-45BD-4B12-93DD-5118AA6B1BE8} = {4E11526E-A855-40DB-BC78-24C0B503BE76}
+		{20BADD15-9140-4B56-A63B-FA624786F65D} = {4E11526E-A855-40DB-BC78-24C0B503BE76}
+		{41150D2A-2666-48A1-8286-C94EE827147C} = {4E11526E-A855-40DB-BC78-24C0B503BE76}
 	EndGlobalSection
 EndGlobal
