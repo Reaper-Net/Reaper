@@ -4,6 +4,47 @@
         <TargetFramework>net8.0</TargetFramework>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
+        <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
     </PropertyGroup>
+    <PropertyGroup Condition="$(DefineConstants.Contains(REAPER))">
+        <InterceptorsPreviewNamespaces>$(InterceptorsPreviewNamespaces);Reaper.Generated</InterceptorsPreviewNamespaces>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <Content Include="..\..\.dockerignore">
+        <Link>.dockerignore</Link>
+      </Content>
+    </ItemGroup>
+
+    <ItemGroup Condition="'$(Configuration)' == 'Release'">
+        <Compile Remove="Carter\*.cs" />
+        <Compile Remove="Controllers\*.cs" />
+        <Compile Remove="FastEndpoints\*.cs" />
+        <Compile Remove="Reaper\*.cs" />
+    </ItemGroup>
+
+    <ItemGroup Condition="$(DefineConstants.Contains(CARTER))">
+      <PackageReference Include="Carter" Version="7.2.0" />
+      <Compile Include="Carter\*.cs" />
+    </ItemGroup>
+    <ItemGroup Condition="$(DefineConstants.Contains(CTRL))">
+      <Compile Include="Controllers\*.cs" />
+    </ItemGroup>
+    <ItemGroup Condition="$(DefineConstants.Contains(FASTEP))">
+      <PackageReference Include="FastEndpoints" Version="5.19.2" />
+      <Compile Include="FastEndpoints\*.cs" />
+    </ItemGroup>
+    <ItemGroup Condition="$(DefineConstants.Contains(REAPER))">
+      <PackageReference Include="Reaper.Core" Version="0.1.0-alpha.0.10" />
+      <PackageReference Include="Reaper.SourceGenerator" Version="0.1.0-alpha.0.10" />
+      <Compile Include="Reaper\*.cs" />
+    </ItemGroup>
+
+    <ItemGroup Condition="'$(Configuration)' == 'Debug'">
+        <PackageReference Include="Carter" Version="7.2.0" />
+        <PackageReference Include="FastEndpoints" Version="5.19.2" />
+        <ProjectReference Include="..\..\src\Reaper\Reaper.csproj" />
+        <ProjectReference Include="..\..\src\Reaper.SourceGenerator\Reaper.SourceGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    </ItemGroup>
 
 </Project>

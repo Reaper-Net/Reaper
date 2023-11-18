@@ -5,15 +5,21 @@
         <TargetFramework>net8.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
+        <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="BenchmarkDotNet" Version="0.13.10" />
-      <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="8.0.0" />
+      <ProjectReference Include="..\BenchmarkWeb\BenchmarkWeb.csproj" />
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\BenchmarkWeb\BenchmarkWeb.csproj" />
+      <PackageReference Include="Testcontainers" Version="3.6.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Content Include="..\..\.dockerignore">
+        <Link>.dockerignore</Link>
+      </Content>
     </ItemGroup>
 
 </Project>
