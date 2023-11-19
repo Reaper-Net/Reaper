@@ -2,11 +2,11 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Operations;
 
-namespace Reaper.SourceGenerator.ServicesInterceptor;
+namespace Reaper.SourceGenerator.MapperInterceptor;
 
 public static class ExtensionMethods
 {
-    public static bool IsTargetForServicesGenerator(this SyntaxNode node)
+    public static bool IsTargetForMapperInterceptor(this SyntaxNode node)
     {
         return node is InvocationExpressionSyntax
         {
@@ -16,7 +16,7 @@ public static class ExtensionMethods
                 {
                     Identifier: SyntaxToken
                     {
-                        ValueText: "UseReaper"
+                        ValueText: "MapReaperEndpoints"
                     }
                 }
             }

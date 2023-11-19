@@ -4,8 +4,10 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
 using Reaper.SourceGenerator.Internal;
+using Reaper.SourceGenerator.MapperInterceptor;
 using Reaper.SourceGenerator.ServicesInterceptor;
 using Reaper.SourceGenerator.ReaperEndpoints;
+using Reaper.SourceGenerator.RoslynHelpers;
 
 namespace Reaper.SourceGenerator
 {
@@ -19,23 +21,21 @@ namespace Reaper.SourceGenerator
                     predicate: static (s, _) => s.IsEndpointTarget(),
                     transform: static (ctx, _) => Transformer(ctx))
                 .Where(m => m.BaseTypeName.AsSpan(0, 21).SequenceEqual("Reaper.ReaperEndpoint".AsSpan())) // We don't do a symbol comparison here as it could be a sub-type
-                .WithTrackingName("Syntax");
+                .WithTrackingName(GeneratorStatics.StepEndpoints);
             
             var mapReaperEndpointCall = context.SyntaxProvider.CreateSyntaxProvider(
-                predicate: static (s, _) => s is InvocationExpressionSyntax inv &&
-                                           inv.Expression is MemberAccessExpressionSyntax mae &&
-                                           mae.Name.ToString() == "MapReaperEndpoints",
+                predicate: static (s, _) => s.IsTargetForMapperInterceptor(),
                 transform: static (ctx, ct) =>
                 {
-                    Console.WriteLine("Valid UseReaper: " + ctx.IsValidUseReaperOperation(ct));
+                    Console.WriteLine("Valid UseReaper: " + ctx.GetValidReaperOperation(ct));
                     return ctx.Node;
                 })
-                .WithTrackingName("MapReaperEndpoint");
+                .WithTrackingName(GeneratorStatics.StepMapper);
             
             var useReaperCall = context.SyntaxProvider.CreateSyntaxProvider(
                     predicate: static (s, _) => s.IsTargetForServicesGenerator(),
                     transform: static (ctx, _) => ctx.Node)
-                .WithTrackingName("UseReaper");
+                .WithTrackingName(GeneratorStatics.StepServices);
             
             var epsWithCompilation = context.CompilationProvider.Combine(reaperEndpointClasses.Collect());
 

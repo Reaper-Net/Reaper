@@ -23,6 +23,6 @@ public static class ExtensionMethods
             return false;
         }
 
-        return (node as ClassDeclarationSyntax).BaseList.Types.Any(m => m.Type.ToString().Contains("ReaperEndpoint"));
+        return (node as ClassDeclarationSyntax)!.BaseList!.Types.Any(m => m.Type.ToString().Contains("ReaperEndpoint"));
     }
 }
