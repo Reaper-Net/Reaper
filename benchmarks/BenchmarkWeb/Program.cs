@@ -7,6 +7,9 @@ using Reaper;
 using FastEndpoints;
 #elif CARTER
 using Carter;
+#elif MINIMAL
+using BenchmarkWeb.Dtos;
+using Microsoft.AspNetCore.Mvc;
 #endif
 
 [assembly:InternalsVisibleTo("Benchmarker")]
@@ -35,6 +38,24 @@ app.Lifetime.ApplicationStarted.Register(() =>
 
 #if MINIMAL
 app.MapGet("/ep", () => "Hello, World!");
+app.MapGet("/typical/dosomething", () => new OkResult());
+app.MapPost("/typical/acceptsomething", (SampleRequest req) => new OkResult());
+app.MapPost("/typical/returnsomething", (SampleRequest req) => new ObjectResult(new SampleResponse
+{
+    Output = req.Input,
+    SomeOtherOutput = req.SomeOtherInput,
+    SomeBool = req.SomeBool,
+    GeneratedAt = DateTime.UtcNow
+}));
+app.MapGet("/anothertypical/dosomething", () => new OkResult());
+app.MapPost("/anothertypical/acceptsomething", (SampleRequest req) => new OkResult());
+app.MapPost("/anothertypical/returnsomething", (SampleRequest req) => new ObjectResult(new SampleResponse
+{
+    Output = req.Input,
+    SomeOtherOutput = req.SomeOtherInput,
+    SomeBool = req.SomeBool,
+    GeneratedAt = DateTime.UtcNow
+}));
 #elif REAPER
 app.UseReaperMiddleware();
 app.MapReaperEndpoints();
