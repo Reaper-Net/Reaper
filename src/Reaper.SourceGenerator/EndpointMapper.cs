@@ -3,6 +3,9 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
+using Reaper.SourceGenerator.Internal;
+using Reaper.SourceGenerator.ServicesInterceptor;
+using Reaper.SourceGenerator.ReaperEndpoints;
 
 namespace Reaper.SourceGenerator
 {
@@ -13,7 +16,7 @@ namespace Reaper.SourceGenerator
         {
             var reaperEndpointClasses = context.SyntaxProvider
                 .CreateSyntaxProvider(
-                    predicate: static (s, _) => Matcher(s),
+                    predicate: static (s, _) => s.IsEndpointTarget(),
                     transform: static (ctx, _) => Transformer(ctx))
                 .Where(m => m.BaseTypeName.AsSpan(0, 21).SequenceEqual("Reaper.ReaperEndpoint".AsSpan())) // We don't do a symbol comparison here as it could be a sub-type
                 .WithTrackingName("Syntax");
@@ -22,13 +25,15 @@ namespace Reaper.SourceGenerator
                 predicate: static (s, _) => s is InvocationExpressionSyntax inv &&
                                            inv.Expression is MemberAccessExpressionSyntax mae &&
                                            mae.Name.ToString() == "MapReaperEndpoints",
-                transform: static (ctx, _) => ctx.Node)
+                transform: static (ctx, ct) =>
+                {
+                    Console.WriteLine("Valid UseReaper: " + ctx.IsValidUseReaperOperation(ct));
+                    return ctx.Node;
+                })
                 .WithTrackingName("MapReaperEndpoint");
             
             var useReaperCall = context.SyntaxProvider.CreateSyntaxProvider(
-                    predicate: static (s, _) => s is InvocationExpressionSyntax inv &&
-                                                inv.Expression is MemberAccessExpressionSyntax mae &&
-                                                mae.Name.ToString() == "UseReaper",
+                    predicate: static (s, _) => s.IsTargetForServicesGenerator(),
                     transform: static (ctx, _) => ctx.Node)
                 .WithTrackingName("UseReaper");
             
@@ -139,15 +144,15 @@ namespace Reaper.SourceGenerator
                     sb.Append(new string(' ', x * 4));
                     sb.Append(str);
                 };
-                sb.AppendLine(StaticGeneration.FileHeader);
-                sb.AppendLine(StaticGeneration.CodeInterceptorAttribute);
+                sb.AppendLine(GeneratorStatics.FileHeader);
+                sb.AppendLine(GeneratorStatics.CodeInterceptorAttribute);
 
                 pl("namespace Reaper.Generated {");
                 pl("using Microsoft.Extensions.DependencyInjection.Extensions;", 1);
                 pl("using System.Runtime.CompilerServices;", 1);
                 pl("using Reaper.Context;", 1);
                 sb.AppendLine();
-                pl(StaticGeneration.GeneratedCodeAttribute, 1);
+                pl(GeneratorStatics.GeneratedCodeAttribute, 1);
                 pl("file static class ServiceAdditionInterceptor", 1);
                 pl("{", 1);
                 p("[InterceptsLocation(\"", 2);
@@ -199,15 +204,15 @@ namespace Reaper.SourceGenerator
                     sb.Append(new string(' ', x * 4));
                     sb.Append(str);
                 };
-                sb.AppendLine(StaticGeneration.FileHeader);
-                sb.AppendLine(StaticGeneration.CodeInterceptorAttribute);
+                sb.AppendLine(GeneratorStatics.FileHeader);
+                sb.AppendLine(GeneratorStatics.CodeInterceptorAttribute);
 
                 pl("namespace Reaper.Generated {"); 
                 pl("using System;", 1);
                 pl("using System.Runtime.CompilerServices;", 1);
                 pl("using Reaper.Mapper;", 1);
                 sb.AppendLine();
-                pl(StaticGeneration.GeneratedCodeAttribute, 1);
+                pl(GeneratorStatics.GeneratedCodeAttribute, 1);
                 pl("file static class EndpointMapperInterceptor", 1);
                 pl("{", 1);
                 p("[InterceptsLocation(\"", 2);

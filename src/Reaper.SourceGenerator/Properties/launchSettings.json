@@ -3,7 +3,7 @@
   "profiles": {
     "Generators": {
       "commandName": "DebugRoslynComponent",
-      "targetProject": "../Divergent.Connect.Sms/Divergent.Connect.Sms.csproj"
+      "targetProject": "../../tests/Reaper.TestWeb/Reaper.TestWeb.csproj"
     }
   }
 }

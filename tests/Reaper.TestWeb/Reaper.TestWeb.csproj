@@ -5,7 +5,7 @@
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
         <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
-        <GeneratedFilesOutputPath>Generated</GeneratedFilesOutputPath>
+        <CompilerGeneratedFilesOutputPath>Generated</CompilerGeneratedFilesOutputPath>
 
         <InterceptorsPreviewNamespaces>$(InterceptorsPreviewNamespaces);Reaper.Generated</InterceptorsPreviewNamespaces>
     </PropertyGroup>
@@ -16,8 +16,8 @@
     </ItemGroup>
     
     <ItemGroup>
-        <None Include="$(CompilerGeneratedFilesOutputPath)/**/*.cs" />
         <Compile Remove="$(CompilerGeneratedFilesOutputPath)/**/*.cs" />
+        <None Include="$(CompilerGeneratedFilesOutputPath)/**/*.cs" />
     </ItemGroup>
 
 </Project>
