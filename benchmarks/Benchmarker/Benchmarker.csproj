@@ -13,6 +13,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <PackageReference Include="Spectre.Console" Version="0.47.1-preview.0.40" />
       <PackageReference Include="Testcontainers" Version="3.6.0" />
     </ItemGroup>
 

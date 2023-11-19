@@ -9,6 +9,7 @@ using DotNet.Testcontainers.Containers;
 using DotNet.Testcontainers.Images;
 using DotNet.Testcontainers.Networks;
 using Microsoft.Extensions.Logging.Abstractions;
+using Spectre.Console;
 
 namespace Benchmarker;
 
@@ -22,43 +23,65 @@ public class TestRunner()
 
     public async Task InitialiseAsync()
     {
-        TestcontainersSettings.Logger = NullLogger.Instance;
-        //ConsoleLogger.Instance.DebugLogLevelEnabled = true;
-        await wrkImage.CreateAsync();
+        await AnsiConsole.Status()
+            .Spinner(Spinner.Known.SimpleDotsScrolling)
+            .StartAsync("Initialising...", async ctx =>
+            {
+                ctx.Status("Building reusable wrk container image");
+                TestcontainersSettings.Logger = NullLogger.Instance;
+                //ConsoleLogger.Instance.DebugLogLevelEnabled = true;
+                await wrkImage.CreateAsync();
+
+                AnsiConsole.WriteLine("Initialised.");
+            });
     }
 
     public async Task<TestResult> ExecuteTestAsync(string container)
     {
-        var network = new NetworkBuilder()
-            .WithName("reaper-test-network")
-            .Build();
-        var appImage = await CreateAppImageAsync(container);
-        var containers = CreateContainersWithNetworkAsync(appImage, network);
-        await network.CreateAsync();
-
-        long startupTime;
-        decimal memStartup, memLoadTest, requestsSec;
-        // Start the app image
-        await using (var app = containers.app)
-        {
-            await app.StartAsync();
-            startupTime = await GetTimerFromLogsAsLongAsync(app, "BenchmarkWeb Startup:");
-            memStartup = await DockerStats.GetMemoryUsageForContainer("reaper-test-app");
-            
-            // Send warmup requests
-            await RunWarmupAsync(app);
-            // Send high load request to basic /ep
-            await using (var wrk = containers.wrk)
+        long startupTime = 0;
+        decimal memStartup = 0, memLoadTest = 0, requestsSec = 0;
+        AnsiConsole.MarkupLine($"Running [bold]{container}[/]");
+        await AnsiConsole.Status()
+            .Spinner(Spinner.Known.Aesthetic)
+            .StartAsync("Executing '" + container + "'...", async ctx =>
             {
-                await containers.wrk.StartAsync();
-                await Task.Delay(7000);
-                requestsSec = await GetTimerFromLogsAsDecimalAsync(wrk, "Requests/sec:");
-                await wrk.StopAsync();
-            }
-            memLoadTest = await DockerStats.GetMemoryUsageForContainer("reaper-test-app");
-            await app.StopAsync();
-        }
-        await network.DeleteAsync();
+                ctx.Status("Creating Network & building app image...");
+                var network = new NetworkBuilder()
+                    .WithName("reaper-test-network")
+                    .Build();
+                var appImage = await CreateAppImageAsync(container);
+                var containers = CreateContainersWithNetworkAsync(appImage, network);
+                await network.CreateAsync();
+
+                // Start the app image
+                await using (var app = containers.app)
+                {
+                    ctx.Spinner(Spinner.Known.Arc);
+                    ctx.Status("Starting app container...");
+                    await app.StartAsync();
+                    startupTime = await GetTimerFromLogsAsLongAsync(app, "BenchmarkWeb Startup:");
+                    memStartup = await DockerStats.GetMemoryUsageForContainer("reaper-test-app");
+            
+                    ctx.Status("Hitting each endpoint as warmup...");
+                    // Send warmup requests
+                    await RunWarmupAsync(app);
+                    // Send high load request to basic /ep
+                    await using (var wrk = containers.wrk)
+                    {
+                        ctx.Spinner(Spinner.Known.Monkey);
+                        ctx.Status("Starting wrk & executing high load simulation...");
+                        await containers.wrk.StartAsync();
+                        await Task.Delay(7000);
+                        requestsSec = await GetTimerFromLogsAsDecimalAsync(wrk, "Requests/sec:");
+                        await wrk.StopAsync();
+                    }
+                    memLoadTest = await DockerStats.GetMemoryUsageForContainer("reaper-test-app");
+                    await app.StopAsync();
+                }
+                await network.DeleteAsync();
+
+                AnsiConsole.MarkupLineInterpolated($"[dim]:check_mark_button:  Startup Time: {startupTime}ms, Startup Mem: {memStartup}, Req/s: {requestsSec}, End Mem: {memLoadTest}[/]");
+            });
 
         return new()
         {

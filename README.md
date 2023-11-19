@@ -2,7 +2,7 @@
 
 # Reaper
 
-Reaper is a .NET 8+ library and source generator for building Minimal APIs, but not as you know them.
+Reaper is a .NET 8+ source-generator based, AOT focused library for writing your endpoints in ASP.NET Core.
 
 Inspired by the awesome, and more full-featured [FastEndpoints](https://fast-endpoints.com/), Reaper aims to provide a
 REPR pattern implementation experience with a focus on performance and simplicity.
@@ -80,6 +80,59 @@ public class ReflectorEndpoint : ReaperEndpoint<TestRequest, TestResponse>
 
 Enjoy.
 
+## Good Endpoints
+
+The idea even if you have multiple input/output types, is to always consume and return a specific type. This not only
+means Reaper doesn't have to do too much binding work at any point, it also helps your endpoints to be more well
+defined.
+
+For example, if you wanted to return a list from an endpoint then sure, you could do:
+
+```csharp
+public class AListingEndpoint : ReaperEndpointXR<List<MyDto>>
+```
+
+But in our very opinionated fashion, it's better to do:
+
+```csharp
+public class AListingResponse { public IReadOnlyCollection<MyDto> Items { get; set; } }
+
+public class AListingEndpoint : ReaperEndpointXR<AListingResponse>
+```
+
+Why? Well, first off it's a bit more explicit, you're not using generic types for your endpoints, rather a defined DTO.
+Also if you've ever built a real app, you'll know that _things change_, like a lot.
+
+What if you did want to add something else to the return from this endpoint? Without changing your implementation of
+clients etc, you can't. You'd have to change the type of the endpoint, which is a breaking change. With the above, you
+could add additional properties with no cost (assuming your client serializer isn't too strict of course).
+
+When it comes to *Request* objects, we take a different approach from what you may be used to in Minimal APIs or
+Controllers, but we do reuse their `[FromBody]`, `[FromQuery]` and `[FromRoute]` attributes. It's more akin to what is
+available in FastEndpoints, though more explicit as you may expect.
+
+With a route of `/test/{id}`, you'd write something like this:
+
+```csharp
+// Controller Action
+[HttpGet("/test/{id}")]
+public IActionResult Test(int id) { /* ... */ }
+
+// Minimal APIs
+app.MapGet("/test/{id}", (int id) => { /* ... */ });
+
+// FastEndpoints
+public class RequestDto { public string Id { get; set; } }
+public class TestEndpoint : Endpoint<RequestDto> { /* ... */ }
+
+// Reaper
+public class RequestDto { [FromRoute] public string Id { get; set; } }
+public class TestEndpoint : ReaperEndpointRX<RequestDto> { /* ... */ }
+```
+
+Notice the explicit `[FromRoute]` attribute. This is because we don't want to do any magic binding above JSON in the body,
+and we don't want to
+
 ### Other Endpoint Bases
 
 Reaper provides a few other endpoint bases for your convenience:
@@ -101,8 +154,7 @@ for more.
 ```csharp
 builder.Services.ConfigureHttpJsonOptions(options =>
 {
-    options.SerializerOptions.TypeInfoResolverChain.Insert(
-                         0, AppJsonSerializerContext.Default);
+    options.SerializerOptions.TypeInfoResolverChain.Insert(0, AppJsonSerializerContext.Default);
 });
 ```
 
@@ -113,11 +165,9 @@ Note that this will be enabled / completed for you automatically in the future.
 Your Endpoint is injected as a *singleton*. This means that you should not store any state in your Endpoint (not that you
 would anyway, right?). Your HandleAsync method is invoked on a per-request basis.
 
-### To resolve services
+To resolve services, you can currently use the `HttpContext` which is exposed via `.Context` within your endpoints.
 
-Currently, the `HttpContext` is exposed via `.Context` within your endpoints.
-
-To resolve services (Scoped or otherwise), simply use:
+An example would be:
 
 ```csharp
 var svc = Context.RequestServices.GetRequiredService<IMyService>();
@@ -130,11 +180,31 @@ var svc = Context.RequestServices.GetRequiredService<IMyService>();
 - [ ] Automatic (and customisable) Mapper support
 - [ ] Automatic generation of Source Generatable DTOs (Request/Response)
 - [ ] More documentation
-- [ ] Tests, obvs
+- [x] Tests, obvs
 - [ ] More examples
 - [ ] Support for [FluentValidation](https://github.com/FluentValidation/FluentValidation)
 - [ ] Support for [MessagePack](https://github.com/MessagePack-CSharp/MessagePack-CSharp)
 - [ ] Support for [MemoryPack](https://github.com/Cysharp/MemoryPack)
+- [ ] 🤨 Our own bare metal (read: Kestrel) routing implementation? Who knows. Maybe.
+
+## Benchmarks
+
+Our own internal tool for benchmarking is not scientific (it's mainly designed to compare our own relative performance
+over time), but it does have somewhat representative results to our goals (below ordered by req/sec).
+
+| Framework     | Startup Time | Memory Usage (MiB) - Startup | Memory Usage (MiB) - Load Test | Requests/sec |
+|---------------|--------------|------------------------------|--------------------------------|--------------|
+| minimal-aot   | 21           | 20.81                        | 26.96                          | 144059.81    |
+| reaper-aot    | 21           | 18.89                        | 30.83                          | 139910.28    |
+| minimal       | 103          | 21.68                        | 258.2                          | 123264.17    |
+| reaper        | 109          | 20.41                        | 294.2                          | 121946.15    |
+| carter        | 115          | 23.1                         | 269.6                          | 121725.32    |
+| fastendpoints | 134          | 23.86                        | 303.6                          | 118512.82    |
+| controllers   | 143          | 24.14                        | 308.9                          | 106056.19    |
+
+We've submitted to the TechEmpower Framework Benchmark, however preliminary results (from an M1 Ultra, 128GB RAM) are
+available for [plaintext](https://www.techempower.com/benchmarks/#section=test&shareid=75585734-6c92-4a79-8cc9-dab0979ffb38&hw=ph&test=plaintext)
+and [json](https://www.techempower.com/benchmarks/#section=test&shareid=75585734-6c92-4a79-8cc9-dab0979ffb38&hw=ph&test=json).
 
 ## Prerelease notice
 
