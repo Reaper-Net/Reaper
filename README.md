@@ -2,7 +2,7 @@
 
 # Reaper
 
-Reaper is a .NET 8+ source-generator based, AOT focused library for writing your endpoints in ASP.NET Core.
+Reaper is a .NET 8+ source-generator based, AOT focused library for writing your endpoints as classes in ASP.NET Core.
 
 Inspired by the awesome, and more full-featured [FastEndpoints](https://fast-endpoints.com/), Reaper aims to provide a
 REPR pattern implementation experience with a focus on performance and simplicity.
