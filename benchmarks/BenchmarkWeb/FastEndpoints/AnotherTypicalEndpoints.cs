@@ -14,7 +14,7 @@ public class AnotherTypicalEndpointDoSomething : EndpointWithoutRequest
 
     public override Task HandleAsync(CancellationToken ct)
     {
-        return base.HandleAsync(ct);
+        return Task.CompletedTask;
     }
 }
 
@@ -28,7 +28,7 @@ public class AnotherTypicalEndpointAcceptSomething : Endpoint<SampleRequest>
 
     public override Task HandleAsync(SampleRequest req, CancellationToken ct)
     {
-        return base.HandleAsync(req, ct);
+        return Task.CompletedTask;
     }
 }
 

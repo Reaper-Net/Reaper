@@ -1,3 +1,7 @@
+using System.Net.Http.Json;
+using System.Text;
+using System.Text.Json;
+using BenchmarkWeb.Dtos;
 using DotNet.Testcontainers;
 using DotNet.Testcontainers.Builders;
 using DotNet.Testcontainers.Configurations;
@@ -31,28 +35,29 @@ public class TestRunner()
         var appImage = await CreateAppImageAsync(container);
         var containers = CreateContainersWithNetworkAsync(appImage, network);
         await network.CreateAsync();
-        
+
+        long startupTime;
+        decimal memStartup, memLoadTest, requestsSec;
         // Start the app image
-        await containers.app.StartAsync();
-        var output = await containers.app.GetLogsAsync();
-        var split = output.Stdout.Split('\n');
-        var startupTimeStr = split.First(m => m.Contains("BenchmarkWeb Startup:"));
-        // Get startup time
-        var startupTime = long.Parse(startupTimeStr.Substring(startupTimeStr.LastIndexOf(':') + 2).Split(' ')[0]);
-        // Get memory usage
-        var memStartup = await DockerStats.GetMemoryUsageForContainer("reaper-test-app");
-        // Start the wrk container
-        await containers.wrk.StartAsync();
-        await Task.Delay(7000);
-        output = await containers.wrk.GetLogsAsync();
-        split = output.Stdout.Split('\n');
-        var requestsSecStr = split.First(m => m.Contains("Requests/sec:"));
-        var requestsSec = decimal.Parse(requestsSecStr.Substring(requestsSecStr.LastIndexOf(':') + 2));
-        var memLoadTest = await DockerStats.GetMemoryUsageForContainer("reaper-test-app");
-        await containers.wrk.StopAsync();
-        await containers.wrk.DisposeAsync();
-        await containers.app.StopAsync();
-        await containers.app.DisposeAsync();
+        await using (var app = containers.app)
+        {
+            await app.StartAsync();
+            startupTime = await GetTimerFromLogsAsLongAsync(app, "BenchmarkWeb Startup:");
+            memStartup = await DockerStats.GetMemoryUsageForContainer("reaper-test-app");
+            
+            // Send warmup requests
+            await RunWarmupAsync(app);
+            // Send high load request to basic /ep
+            await using (var wrk = containers.wrk)
+            {
+                await containers.wrk.StartAsync();
+                await Task.Delay(7000);
+                requestsSec = await GetTimerFromLogsAsDecimalAsync(wrk, "Requests/sec:");
+                await wrk.StopAsync();
+            }
+            memLoadTest = await DockerStats.GetMemoryUsageForContainer("reaper-test-app");
+            await app.StopAsync();
+        }
         await network.DeleteAsync();
 
         return new()
@@ -64,6 +69,68 @@ public class TestRunner()
             RequestsSec = requestsSec
         };
     }
+
+    private async Task RunWarmupAsync(IContainer container)
+    {
+        var routes = new Dictionary<string, string>
+        {
+            {"/ep", "GET"},
+            {"/typical/dosomething", "GET"},
+            {"/typical/acceptsomething", "POST"},
+            {"/typical/returnsomething", "POST"},
+            {"/anothertypical/dosomething", "GET"},
+            {"/anothertypical/acceptsomething", "POST"},
+            {"/anothertypical/returnsomething", "POST"}
+        };
+
+        using (var httpClient = new HttpClient())
+        {
+            var sampleRequest = new SampleRequest
+            {
+                Input = "Warmup",
+                SomeOtherInput = "Warmup",
+                SomeBool = true
+            };
+
+            var stringContent = new StringContent(JsonSerializer.Serialize(sampleRequest, new JsonSerializerOptions
+            {
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+            }), Encoding.UTF8, "application/json");
+            foreach (var route in routes)
+            {
+                var requestUri = new UriBuilder(Uri.UriSchemeHttp, container.Hostname, container.GetMappedPublicPort(8080), route.Key).Uri;
+                
+                var request = new HttpRequestMessage(new HttpMethod(route.Value), requestUri);
+                if (route.Value == "POST")
+                {
+                    request.Content = stringContent;
+                }
+
+                var resp = await httpClient.SendAsync(request);
+                if (!resp.IsSuccessStatusCode)
+                {
+                    throw new Exception("Container failed to handle request " + route.Key + " with status: " + resp.StatusCode + ".");
+                }
+            }
+        }
+    }
+
+    private async Task<string> GetTimerFromLogsAsync(IContainer container, string prefix)
+    {
+        var logs = await container.GetLogsAsync();
+        var split = logs.Stdout.Split('\n');
+        var valueLine = split.First(m => m.Contains(prefix));
+        //Console.WriteLine(valueLine);
+        var value = valueLine.Substring(valueLine.LastIndexOf(':') + 2).Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)[0];
+        //Console.WriteLine(value);
+        return value;
+    }
+    
+    private async Task<decimal> GetTimerFromLogsAsDecimalAsync(IContainer container, string prefix) =>
+        decimal.Parse(await GetTimerFromLogsAsync(container, prefix));
+    
+    private async Task<long> GetTimerFromLogsAsLongAsync(IContainer container, string prefix) =>
+        long.Parse(await GetTimerFromLogsAsync(container, prefix));
 
     private async Task<IImage> CreateAppImageAsync(string container)
     {
