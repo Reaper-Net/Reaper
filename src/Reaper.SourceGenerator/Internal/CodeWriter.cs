@@ -23,8 +23,21 @@ public class CodeWriter
     public void Namespace(string name)
     {
         builder.Append("namespace ");
-        builder.Append(name);
-        builder.AppendLine(";");
+        builder.AppendLine(name);
+        builder.AppendLine("{");
+        In();
+    }
+
+    public void OpenBlock()
+    {
+        AppendLine("{");
+        In();
+    }
+
+    public void CloseBlock()
+    {
+        Out();
+        AppendLine("}");
     }
 
     public void StartClass(string name, string accessModifier = "public", string? bases = null)
@@ -43,14 +56,18 @@ public class CodeWriter
         AppendLine("{");
         In();
     }
-
-    public void EndClass()
-    {
-        Out();
-        AppendLine("}");
-    }
     
     public void Append(string value)
+    {
+        if (indentPending)
+        {
+            indentPending = false;
+            builder.Append(' ', indentLevel * indentAmount);
+        }
+        builder.Append(value);
+    }
+
+    public void Append(int value)
     {
         if (indentPending)
         {
@@ -67,5 +84,8 @@ public class CodeWriter
             builder.Append(' ', indentLevel * indentAmount);
         }
         builder.AppendLine(value);
+        indentPending = true;
     }
+
+    public override string ToString() => builder.ToString();
 }

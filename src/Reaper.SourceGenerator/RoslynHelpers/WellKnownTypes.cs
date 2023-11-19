@@ -17,14 +17,20 @@ internal class WellKnownTypes(Compilation compilation)
     private readonly Lazy<INamedTypeSymbol> reaperEndpointXR = new(() => compilation.GetTypeByMetadataName("Reaper.ReaperEndpointXR`1")!);
     internal INamedTypeSymbol ReaperEndpointXR => reaperEndpointXR.Value;
     
+    private readonly Lazy<INamedTypeSymbol> reaperEndpointBase = new(() => compilation.GetTypeByMetadataName("Reaper.ReaperEndpointBase")!);
+    internal INamedTypeSymbol ReaperEndpointBase => reaperEndpointBase.Value;
+    
     private readonly Lazy<INamedTypeSymbol> reaperRouteAttribute = new(() => compilation.GetTypeByMetadataName("Reaper.Attributes.ReaperRouteAttribute")!);
     internal INamedTypeSymbol ReaperRouteAttribute => reaperRouteAttribute.Value;
     
-    private readonly Lazy<INamedTypeSymbol> reaperScopedAttribute = new(() => compilation.GetTypeByMetadataName("Reaper.Attributes.ReaperRouteAttribute")!);
+    private readonly Lazy<INamedTypeSymbol> reaperScopedAttribute = new(() => compilation.GetTypeByMetadataName("Reaper.Attributes.ReaperScopedAttribute")!);
     internal INamedTypeSymbol ReaperScopedAttribute => reaperScopedAttribute.Value;
     
+    private readonly Lazy<INamedTypeSymbol> reaperForceHandlerAttribute = new(() => compilation.GetTypeByMetadataName("Reaper.Attributes.ReaperForceHandlerAttribute")!);
+    internal INamedTypeSymbol ReaperForceHandlerAttribute => reaperForceHandlerAttribute.Value;
+    
     private static WellKnownTypes? instance;
-    static WellKnownTypes GetOrCreate(Compilation compilation)
+    internal static WellKnownTypes GetOrCreate(Compilation compilation)
     {
         if (instance == default)
         {

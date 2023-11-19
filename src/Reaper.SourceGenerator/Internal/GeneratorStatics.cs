@@ -23,6 +23,7 @@ public static class GeneratorStatics
                                      //------------------------------------------------------------------------------
 
                                      #nullable enable
+                                     
                                      """;
 
     public static string CodeInterceptorAttribute = $$"""
@@ -37,6 +38,7 @@ public static class GeneratorStatics
                                                               }
                                                           }
                                                       }
+                                                      
                                                       """;
 
     public static string GeneratedCodeAttribute = $"[System.CodeDom.Compiler.GeneratedCodeAttribute(\"{AssemblyFullName}\", \"{AssemblyVersion}\")]";
