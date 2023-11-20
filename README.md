@@ -145,20 +145,20 @@ public class ResponseOnlyEndpoint : ReaperEndpointXR<TResponse> { /* Use the Res
 
 ### Native AOT Support
 
-The core of Reaper is Native AOT compatible but you'll (currently!) need to use JSON Source Generation on your
-Request/Response objects. [See official guidance](https://learn.microsoft.com/en-us/dotnet/standard/serialization/system-text-json/source-generation?pivots=dotnet-8-0)
-on how to do this, and you have to configure the internal Serializer Options to use the context. Essentially, it's
-what is below, but see the [Minimal API Request Delegate Generator Guidance](https://learn.microsoft.com/en-us/aspnet/core/fundamentals/aot/request-delegate-generator/rdg?view=aspnetcore-8.0)
-for more.
+The core of Reaper is Native AOT compatible.
+
+We currently generate a context for JSON Source Generation named `ReaperJsonSerializerContext` which will work for all
+of your request and response objects.
+
+It's also registered automatically against the HttpJsonOptions, if you need to use them elsewhere you can register it
+in the `.TypeResolverChain` of your `JsonSerializerOptions` like this:
+
 
 ```csharp
-builder.Services.ConfigureHttpJsonOptions(options =>
-{
-    options.SerializerOptions.TypeInfoResolverChain.Insert(0, AppJsonSerializerContext.Default);
-});
+options.SerializerOptions.TypeInfoResolverChain.Insert(0, ReaperJsonSerializerContext.Default);
 ```
 
-Note that this will be enabled / completed for you automatically in the future.
+If you are (de)serializing other types, it's recommended to create a new context with the objects you require.
 
 ### Implementation
 
@@ -178,7 +178,7 @@ var svc = Context.RequestServices.GetRequiredService<IMyService>();
 - [ ] Convenience methods for sending responses, where the type is too restrictive
 - [ ] Ability to bind Request object from route, etc (e.g per-prop `[FromRoute]`)
 - [ ] Automatic (and customisable) Mapper support
-- [ ] Automatic generation of Source Generatable DTOs (Request/Response)
+- [x] Automatic generation of Source Generatable DTOs (Request/Response)
 - [ ] More documentation
 - [x] Tests, obvs
 - [ ] More examples

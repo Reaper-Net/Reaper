@@ -1,6 +1,5 @@
 using BenchmarkWeb.Dtos;
 using Carter;
-using Microsoft.AspNetCore.Mvc;
 
 namespace BenchmarkWeb.Carter;
 

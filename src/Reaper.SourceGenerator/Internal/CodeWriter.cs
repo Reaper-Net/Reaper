@@ -1,4 +1,3 @@
-using System.Data;
 using System.Text;
 
 namespace Reaper.SourceGenerator.Internal;
@@ -40,9 +39,13 @@ public class CodeWriter
         AppendLine("}");
     }
 
-    public void StartClass(string name, string accessModifier = "public", string? bases = null)
+    public void StartClass(string name, string accessModifier = "public", string? bases = null, bool skipGenCode = false)
     {
-        AppendLine(GeneratorStatics.GeneratedCodeAttribute);
+        if (!skipGenCode)
+        {
+            AppendLine(GeneratorStatics.GeneratedCodeAttribute);
+        }
+
         Append(accessModifier);
         Append(" class ");
         Append(name);

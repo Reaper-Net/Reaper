@@ -34,6 +34,19 @@ internal class ServicesInterceptorGenerator(ImmutableArray<ReaperDefinition> end
         codeWriter.In();
         codeWriter.AppendLine("app.Services.TryAddSingleton<IReaperExecutionContextProvider, ReaperExecutionContextProvider>();");
         codeWriter.AppendLine(string.Empty);
+
+        if (endpoints.Any(m => m.HasRequest || m.HasResponse))
+        {
+            codeWriter.AppendLine("app.Services.ConfigureHttpJsonOptions(options =>");
+            codeWriter.In();
+            codeWriter.AppendLine("{");
+            codeWriter.In();
+            codeWriter.AppendLine("options.SerializerOptions.TypeInfoResolverChain.Insert(0, ReaperJsonSerializerContext.Default);");
+            codeWriter.Out();
+            codeWriter.AppendLine("});");
+            codeWriter.Out();
+        }
+        
         codeWriter.AppendLine("// Endpoints");
                 
         var validEndpoints = endpoints.Where(m => m.IsFullyConfigured).ToList();

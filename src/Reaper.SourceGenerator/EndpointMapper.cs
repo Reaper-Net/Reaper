@@ -1,14 +1,9 @@
-﻿using System.Collections.Immutable;
-using System.Text;
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.CodeAnalysis.Text;
+﻿using Microsoft.CodeAnalysis;
 using Reaper.SourceGenerator.Internal;
+using Reaper.SourceGenerator.JsonContextGenerator;
 using Reaper.SourceGenerator.MapperInterceptor;
 using Reaper.SourceGenerator.ServicesInterceptor;
 using Reaper.SourceGenerator.ReaperEndpoints;
-using Reaper.SourceGenerator.RoslynHelpers;
 
 namespace Reaper.SourceGenerator
 {
@@ -17,6 +12,8 @@ namespace Reaper.SourceGenerator
     {
         public void Initialize(IncrementalGeneratorInitializationContext context)
         {
+            JsonSourceGenerationSupport.RegisterAssemblyResolver();
+            
             var reaperEndpointDefinitions = context.SyntaxProvider
                 .CreateSyntaxProvider(
                     predicate: static (s, _) => s.IsEndpointTarget(),
@@ -45,7 +42,11 @@ namespace Reaper.SourceGenerator
                 .Where(m => m != null)
                 .WithTrackingName(GeneratorStatics.StepServices);
 
-            var allData = reaperEndpointDefinitions.Collect()
+            var collectedEndpoints = reaperEndpointDefinitions.Collect();
+            
+            context.RunJsonSourceGeneratorWithModifiedProvider(collectedEndpoints);
+            
+            var allData = collectedEndpoints
                 .Combine(mapReaperEndpointCall.Collect().Select((x, _) => x.First()))
                 .Combine(useReaperCall.Collect().Select((x, _) => x.First()));
 
@@ -53,10 +54,13 @@ namespace Reaper.SourceGenerator
             {
                 var ((endpoints, mapReaper), useReaper) = data;
 
+                var jsonContextGenerator = new JsonContextGenerator.JsonContextGenerator(endpoints);
+                var jsonContextCode = jsonContextGenerator.Generate();
+                ctx.AddSource("ReaperJsonSerializerContext.Base.g.cs", jsonContextCode);
+                
                 var serviceInterceptorGenerator = new ServicesInterceptorGenerator(endpoints, useReaper);
                 var serviceInterceptorCode = serviceInterceptorGenerator.Generate();
                 ctx.AddSource("ServicesInterceptor.g.cs", serviceInterceptorCode);
-                
                 
                 var mapperInterceptorGenerator = new MapperInterceptorGenerator(endpoints, mapReaper);
                 var mapperInterceptorCode = mapperInterceptorGenerator.Generate();

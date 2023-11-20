@@ -1,8 +1,6 @@
-using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
 using BenchmarkWeb.Dtos;
-using DotNet.Testcontainers;
 using DotNet.Testcontainers.Builders;
 using DotNet.Testcontainers.Configurations;
 using DotNet.Testcontainers.Containers;

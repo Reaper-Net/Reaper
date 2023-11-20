@@ -37,5 +37,13 @@
     <ItemGroup>
         <None Include="..\..\README.md" Pack="true" PackagePath="\" />
     </ItemGroup>
+    <ItemGroup>
+      <Reference Include="System.Text.Json.SourceGeneration.Reaper">
+        <HintPath>Resources\System.Text.Json.SourceGeneration.Reaper.dll</HintPath>
+      </Reference>
+    </ItemGroup>
+    <ItemGroup>
+      <EmbeddedResource Include="Resources\System.Text.Json.SourceGeneration.Reaper.dll" />
+    </ItemGroup>
 
 </Project>

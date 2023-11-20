@@ -20,12 +20,6 @@ sw.Start();
 
 var builder = WebApplication.CreateSlimBuilder(args);
 
-builder.Services.ConfigureHttpJsonOptions(options =>
-{
-    options.SerializerOptions.TypeInfoResolverChain.Insert(
-        0, AppJsonSerializerContext.Default);
-});
-
 #if REAPER
 builder.UseReaper();
 #elif FASTEP
@@ -34,6 +28,12 @@ builder.Services.AddFastEndpoints();
 builder.Services.AddCarter();
 #elif CTRL
 builder.Services.AddControllers();
+#elif MINIMAL
+builder.Services.ConfigureHttpJsonOptions(options =>
+{
+    options.SerializerOptions.TypeInfoResolverChain.Insert(
+        0, AppJsonSerializerContext.Default);
+});
 #endif
 
 var app = builder.Build();
@@ -83,9 +83,11 @@ namespace BenchmarkWeb
     }
 }
 
+#if MINIMAL
 [JsonSerializable(typeof(SampleRequest))]
 [JsonSerializable(typeof(SampleResponse))]
 public partial class AppJsonSerializerContext : System.Text.Json.Serialization.JsonSerializerContext
 {
     
 }
+#endif

@@ -1,6 +1,5 @@
 using BenchmarkWeb.Dtos;
 using FastEndpoints;
-using Microsoft.AspNetCore.Mvc;
 
 namespace BenchmarkWeb.FastEndpoints;
 
