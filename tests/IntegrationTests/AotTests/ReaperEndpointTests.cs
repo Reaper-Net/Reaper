@@ -1,9 +1,9 @@
 using System.Net;
 
-namespace IntegrationTests.WafTests;
+namespace IntegrationTests.AotTests;
 
-[Collection("WAF")]
-public class ReaperEndpointTests(WafTextFixture fixture)
+[Collection("AOT")]
+public class ReaperEndpointTests(AotTestFixture fixture)
 {
     [Fact]
     public async Task NoneEndpointIs200Ok()

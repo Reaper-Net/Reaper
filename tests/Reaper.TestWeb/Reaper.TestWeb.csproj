@@ -8,16 +8,26 @@
         <CompilerGeneratedFilesOutputPath>Generated</CompilerGeneratedFilesOutputPath>
 
         <InterceptorsPreviewNamespaces>$(InterceptorsPreviewNamespaces);Reaper.Generated</InterceptorsPreviewNamespaces>
+
+        <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
     </PropertyGroup>
 
     <ItemGroup>
       <ProjectReference Include="..\..\src\Reaper\Reaper.csproj" />
-      <ProjectReference Include="..\..\src\Reaper.SourceGenerator\Reaper.SourceGenerator.csproj" ReferenceOutputAssembly="false" OutputItemType="Analyzer" />
+      <ProjectReference Condition="'$(Configuration)' == 'Debug'" Include="..\..\src\Reaper.SourceGenerator\Reaper.SourceGenerator.csproj" ReferenceOutputAssembly="false" OutputItemType="Analyzer" />
+      <PackageReference Condition="'$(Configuration)' == 'Release'" Include="Reaper.SourceGenerator" Version="1.0.0" />
     </ItemGroup>
     
     <ItemGroup>
         <Compile Remove="$(CompilerGeneratedFilesOutputPath)/**/*.cs" />
         <None Include="$(CompilerGeneratedFilesOutputPath)/**/*.cs" />
     </ItemGroup>
+    
+    <ItemGroup>
+      <Content Include="..\..\.dockerignore">
+        <Link>.dockerignore</Link>
+      </Content>
+    </ItemGroup>
+    
 
 </Project>

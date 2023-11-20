@@ -2,11 +2,11 @@ using System.Net;
 using System.Net.Http.Json;
 using Reaper.TestWeb.Endpoints.ReaperEndpoint_ReqResp;
 
-namespace IntegrationTests.WafTests;
+namespace IntegrationTests.AotTests;
 
-[Collection("WAF")]
+[Collection("AOT")]
 // ReSharper disable once InconsistentNaming
-public class ReaperEndpointRRTests(WafTextFixture fixture)
+public class ReaperEndpointRRTests(AotTestFixture fixture)
 {
     [Fact]
     public async Task ReflectorEndpointIsReflecting()
