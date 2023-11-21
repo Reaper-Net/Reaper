@@ -1,15 +1,16 @@
 This is a minor modification to the .NET 8 internal Source Generator.
 
-Specifically:
-- The namespace is changed, to remove conflicts. In testing, the .NET 8 Source Generator is loaded internally if it 
+The modification is on our fork of the runtime and available in the following commit:
+https://github.com/Reaper-Net/runtime/commit/2cfce418262a152ba7b13dccf9939f4484d75503
+
+The changes are specifically:
+- The namespace is changed to remove conflicts. In testing, the .NET 8 Source Generator is loaded internally if it 
   doesn't match so this is a requisite.
 - All of the internal private classes were made public, so we can construct what we need to.
-- A helper method was added, though it's currently not used.
-
-Note that this does *NOT* emit diagnostic information, it might do in the future.
+- ReportDiagnosticsAndEmitSource was made public so we can use it directly.
 
 It's the only way to allow us to virtually chain the generators. If we don't, it doesn't generate the context.
 
 You can see a discussion on this nonsense here: https://github.com/dotnet/roslyn/discussions/48358
 
-If the situation changes in the future, of course this will be updated.
+If the situation changes in the future, of course this will be updated / removed.
