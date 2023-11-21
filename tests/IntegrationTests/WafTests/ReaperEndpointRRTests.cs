@@ -40,7 +40,7 @@ public class ReaperEndpointRRTests(WafTextFixture fixture)
         };
         var resp = await fixture.Client.PostAsJsonAsync("/rerr/fromsource/1/Hello?queryValue=2&another=3", requestBody);
         var str = await resp.Content.ReadAsStringAsync();
-        Assert.Equal("System.InvalidCastException: Unable to cast object of type", str);
+        //Assert.Equal("System.InvalidCastException: Unable to cast object of type", str);
         var json = await resp.Content.ReadFromJsonAsync<FromSourcesEndpoint.FromSourceRequestResponse>();
         Assert.Equal(HttpStatusCode.OK, resp.StatusCode);
         Assert.Equivalent(expected, json);

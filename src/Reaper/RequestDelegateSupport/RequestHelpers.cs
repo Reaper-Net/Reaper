@@ -8,7 +8,15 @@ public static class RequestHelpers
     [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
     public static object? TryConvertValue(object value, Type destination)
     {
-        var sv = (string)value;
+        string sv;
+        if (value is StringValues)
+        {
+            sv = value.ToString();
+        }
+        else
+        {
+            sv = (string)value;
+        }
         if (destination == typeof(string))
         {
             return sv.ToString();
