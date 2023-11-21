@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
-namespace Reaper.MinimalSupport;
+namespace Reaper.RequestDelegateSupport;
 
 public sealed class LogOrThrowExceptionHelper
 {

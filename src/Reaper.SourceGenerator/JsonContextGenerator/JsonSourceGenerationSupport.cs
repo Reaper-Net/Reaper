@@ -11,7 +11,7 @@ namespace Reaper.SourceGenerator.JsonContextGenerator;
 
 public static class JsonSourceGenerationSupport
 {
-    public static void RunJsonSourceGeneratorWithModifiedProvider(
+    internal static void RunJsonSourceGeneratorWithModifiedProvider(
         this IncrementalGeneratorInitializationContext context,
         IncrementalValueProvider<ImmutableArray<ReaperDefinition?>> endpointData)
     {
@@ -62,7 +62,7 @@ public static class JsonSourceGenerationSupport
         };
     }
 
-    public static SyntaxTree GetSyntaxTreeForContext(Compilation compilation, ImmutableArray<ReaperDefinition> endpoints)
+    internal static SyntaxTree GetSyntaxTreeForContext(Compilation compilation, ImmutableArray<ReaperDefinition> endpoints)
     {   
         AttributeSyntax CreateJsonSerializableAttribute(string typeName)
         {
@@ -78,7 +78,7 @@ public static class JsonSourceGenerationSupport
         foreach (var endpoint in endpoints)
         {
             if (endpoint.HasRequest)
-                attributes.Add(CreateJsonSerializableAttribute(endpoint.RequestTypeName));
+                attributes.Add(CreateJsonSerializableAttribute(endpoint.RequestBodyTypeName));
             if (endpoint.HasResponse)
                 attributes.Add(CreateJsonSerializableAttribute(endpoint.ResponseTypeName));
         }

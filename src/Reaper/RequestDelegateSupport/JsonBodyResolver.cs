@@ -1,7 +1,7 @@
 using System.Text.Json.Serialization.Metadata;
 using Microsoft.AspNetCore.Http;
 
-namespace Reaper.MinimalSupport;
+namespace Reaper.RequestDelegateSupport;
 
 public static class JsonBodyResolver
 {

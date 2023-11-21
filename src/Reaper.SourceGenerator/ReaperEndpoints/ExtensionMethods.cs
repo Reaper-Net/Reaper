@@ -90,9 +90,26 @@ internal static class ExtensionMethods
                 }
             }
 
-            return (true, new ReaperDefinition((ctx.Node as ClassDeclarationSyntax)!, ctx.SemanticModel, symbol)
+            RequestTypeMap? requestTypeMap = default!;
+
+            if (request != null)
             {
-                RequestSymbol = request,
+                requestTypeMap = new RequestTypeMap(request, wellKnownTypes);
+            }
+
+            var optimisationType = ResponseOptimisationType.None;
+            if (response != null)
+            {
+                if (response.Equals(wellKnownTypes.StringType, SymbolEqualityComparer.Default))
+                {
+                    optimisationType = ResponseOptimisationType.StringResponse;
+                }
+            }
+
+            return (true, new ReaperDefinition((ctx.Node as ClassDeclarationSyntax)!, ctx.SemanticModel, symbol, baseSymbol)
+            {
+                ResponseOptimisationType = optimisationType,
+                RequestMap = requestTypeMap,
                 ResponseSymbol = response,
                 RouteAttribute = routeAttribute,
                 IsScoped = isScoped,

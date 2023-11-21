@@ -28,6 +28,19 @@ internal class WellKnownTypes(Compilation compilation)
     
     private readonly Lazy<INamedTypeSymbol> reaperForceHandlerAttribute = new(() => compilation.GetTypeByMetadataName("Reaper.Attributes.ReaperForceHandlerAttribute")!);
     internal INamedTypeSymbol ReaperForceHandlerAttribute => reaperForceHandlerAttribute.Value;
+
+    private readonly Lazy<INamedTypeSymbol> aspnetFromBodyAttribute = new(() => compilation.GetTypeByMetadataName("Microsoft.AspNetCore.Mvc.FromBodyAttribute")!);
+    internal INamedTypeSymbol AspNetFromBodyAttribute => aspnetFromBodyAttribute.Value;
+    
+    private readonly Lazy<INamedTypeSymbol> aspnetFromRouteAttribute = new(() => compilation.GetTypeByMetadataName("Microsoft.AspNetCore.Mvc.FromRouteAttribute")!);
+    internal INamedTypeSymbol AspNetFromRouteAttribute => aspnetFromRouteAttribute.Value;
+    
+    private readonly Lazy<INamedTypeSymbol> aspnetFromQueryAttribute = new(() => compilation.GetTypeByMetadataName("Microsoft.AspNetCore.Mvc.FromQueryAttribute")!);
+    internal INamedTypeSymbol AspNetFromQueryAttribute => aspnetFromQueryAttribute.Value;
+    
+    private readonly Lazy<INamedTypeSymbol> stringType = new(() => compilation.GetTypeByMetadataName("System.String")!);
+    internal INamedTypeSymbol StringType => stringType.Value;
+
     
     private static WellKnownTypes? instance;
     internal static WellKnownTypes GetOrCreate(Compilation compilation)

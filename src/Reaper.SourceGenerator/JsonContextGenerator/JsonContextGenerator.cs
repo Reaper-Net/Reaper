@@ -21,10 +21,10 @@ internal class JsonContextGenerator(ImmutableArray<ReaperDefinition> endpoints)
 
         foreach (var endpoint in endpoints.Where(m => m.HasRequest || m.HasResponse))
         {
-            if (endpoint.HasRequest && endpoint.RequestSymbol!.ContainingNamespace is not { Name: "System" })
+            if (endpoint.HasRequest && endpoint.RequestMap!.RequestBodyType!.ContainingNamespace is not { Name: "System" })
             {
                 codeWriter.Append("[JsonSerializable(typeof(");
-                codeWriter.Append(endpoint.RequestTypeName);
+                codeWriter.Append(endpoint.RequestBodyTypeName);
                 codeWriter.AppendLine("))]");
             }
 

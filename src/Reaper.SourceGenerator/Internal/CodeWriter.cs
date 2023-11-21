@@ -9,6 +9,13 @@ public class CodeWriter
     private int indentLevel;
     private bool indentPending = true;
     
+    public CodeWriter() { }
+
+    public CodeWriter(CodeWriter baseWriter)
+    {
+        indentLevel = baseWriter.indentAmount;
+    }
+    
     public void In()
     {
         indentLevel++;
