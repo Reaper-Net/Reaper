@@ -107,6 +107,8 @@ What if you did want to add something else to the return from this endpoint? Wit
 clients etc, you can't. You'd have to change the type of the endpoint, which is a breaking change. With the above, you
 could add additional properties with no cost (assuming your client serializer isn't too strict of course).
 
+### Request Binding
+
 When it comes to *Request* objects, we take a different approach from what you may be used to in Minimal APIs or
 Controllers, but we do reuse their `[FromBody]`, `[FromQuery]` and `[FromRoute]` attributes. It's more akin to what is
 available in FastEndpoints, though more explicit as you may expect.
@@ -123,15 +125,41 @@ app.MapGet("/test/{id}", (int id) => { /* ... */ });
 
 // FastEndpoints
 public class RequestDto { public string Id { get; set; } }
-public class TestEndpoint : Endpoint<RequestDto> { /* ... */ }
+public class TestEndpoint : Endpoint<RequestDto> { 
+    public override void Configure() {
+        Get("/test/{id}");
+    }
+    /* ... */
+}
 
 // Reaper
 public class RequestDto { [FromRoute] public string Id { get; set; } }
+[ReaperRoute(HttpVerbs.Get, "/test/{id}")]
 public class TestEndpoint : ReaperEndpointRX<RequestDto> { /* ... */ }
 ```
 
-Notice the explicit `[FromRoute]` attribute. This is because we don't want to do any magic binding above JSON in the body,
-and we don't want to
+Notice the explicit `[FromRoute]` attribute. This is because there is no magic binding other than converting a whole
+Request DTO from JSON.
+
+What this means is, if you have any `[From*]` attributes, the request object will not be bound from JSON. If you need
+this in addition, create another object (it can be nested, though make sure it's uniquely named for the JSON Source
+Generator) and use it within the base Request DTO with `[FromBody]` for example:
+
+```csharp
+public class RequestDto
+{
+    [FromRoute] public string Id { get; set; }
+    
+    [FromBody] public RequestBodyDto Body { get; set; }
+    
+    public class RequestBodyDto
+    {
+        public string Name { get; set; }
+    }
+}
+```
+
+This follows the philosophy of "less magic" and more definition that is prevalent throughout Reaper.
 
 ### Other Endpoint Bases
 
@@ -176,7 +204,7 @@ var svc = Context.RequestServices.GetRequiredService<IMyService>();
 ### What's coming
 
 - [ ] Convenience methods for sending responses, where the type is too restrictive
-- [ ] Ability to bind Request object from route, etc (e.g per-prop `[FromRoute]`)
+- [x] Ability to bind Request object from route, etc (e.g per-prop `[FromRoute]`)
 - [ ] Automatic (and customisable) Mapper support
 - [x] Automatic generation of Source Generatable DTOs (Request/Response)
 - [ ] More documentation
