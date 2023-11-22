@@ -2,6 +2,7 @@ using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Text.Json.Serialization;
 using BenchmarkWeb.Dtos;
+using BenchmarkWeb.Services;
 
 #if REAPER
 using Reaper;
@@ -19,6 +20,9 @@ var sw = new Stopwatch();
 sw.Start();
 
 var builder = WebApplication.CreateSlimBuilder(args);
+
+// A service for more real world example
+builder.Services.AddSingleton<GetMeAStringService>();
 
 #if REAPER
 builder.UseReaper();
@@ -44,7 +48,7 @@ app.Lifetime.ApplicationStarted.Register(() =>
 });
 
 #if MINIMAL
-app.MapGet("/ep", () => "Hello, World!");
+app.MapGet("/ep", async (GetMeAStringService svc) => await svc.GetMeAString());
 app.MapGet("/typical/dosomething", () => TypedResults.Ok());
 app.MapPost("/typical/acceptsomething", (SampleRequest req) => TypedResults.Ok());
 app.MapPost("/typical/returnsomething", (SampleRequest req) => new SampleResponse

@@ -1,6 +1,6 @@
 namespace Reaper.Handler;
 
-public class ReaperHandler
+public class ReaperEndpointHandler
 {
     
 }

@@ -3,7 +3,7 @@ WORKDIR /src
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
        clang zlib1g-dev
-COPY . .
+COPY benchmarks/BenchmarkWeb .
 RUN dotnet publish "BenchmarkWeb.csproj" -c Release -o /app/publish /p:DefineConstants=MINIMAL /p:PublishAot=true
 
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS final

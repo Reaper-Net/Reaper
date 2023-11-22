@@ -1,8 +1,9 @@
+using BenchmarkWeb.Services;
 using FastEndpoints;
 
 namespace BenchmarkWeb.FastEndpoints;
 
-public class TestEndpoint : EndpointWithoutRequest<string>
+public class TestEndpoint(GetMeAStringService svc) : EndpointWithoutRequest<string>
 {
     public override void Configure()
     {
@@ -10,9 +11,9 @@ public class TestEndpoint : EndpointWithoutRequest<string>
         AllowAnonymous();
     }
 
-    public override Task<string> ExecuteAsync(CancellationToken ct)
+    public override async Task<string> ExecuteAsync(CancellationToken ct)
     {
-        return Task.FromResult("Hello, World!");
+        return await svc.GetMeAString();
     }
 
 }

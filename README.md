@@ -193,13 +193,15 @@ If you are (de)serializing other types, it's recommended to create a new context
 Your Endpoint is injected as a *singleton*. This means that you should not store any state in your Endpoint (not that you
 would anyway, right?). Your HandleAsync method is invoked on a per-request basis.
 
-To resolve services, you can currently use the `HttpContext` which is exposed via `.Context` within your endpoints.
+To resolve services, use the `Resolve<TService>()` method (which includes singletons etc).
 
 An example would be:
 
 ```csharp
-var svc = Context.RequestServices.GetRequiredService<IMyService>();
+var myService = Resolve<IMyService>();
 ```
+
+If you want to use constructor injection, please note that this will only work for Singleton services.
 
 ### What's coming
 
@@ -220,15 +222,34 @@ var svc = Context.RequestServices.GetRequiredService<IMyService>();
 Our own internal tool for benchmarking is not scientific (it's mainly designed to compare our own relative performance
 over time), but it does have somewhat representative results to our goals (below ordered by req/sec).
 
+This is a sample injecting a (singleton) service from the most recent version of our tool. The service simply creates
+a stream, writes the "Hello, World!" strings to it in 2 parts, and reads it back as a string, returning it to the
+endpoint for return back.
+
+The possible reason that we're faster in this scenario as we resolve the service up front, whereas Minimal APIs resolve
+them per request as they support scoped. This is basically the exact scenario that we're working towards.
+
 | Framework     | Startup Time | Memory Usage (MiB) - Startup | Memory Usage (MiB) - Load Test | Requests/sec |
 |---------------|--------------|------------------------------|--------------------------------|--------------|
-| minimal-aot   | 21           | 20.81                        | 26.96                          | 144059.81    |
-| reaper-aot    | 21           | 18.89                        | 30.83                          | 139910.28    |
-| minimal       | 103          | 21.68                        | 258.2                          | 123264.17    |
-| reaper        | 109          | 20.41                        | 294.2                          | 121946.15    |
-| carter        | 115          | 23.1                         | 269.6                          | 121725.32    |
-| fastendpoints | 134          | 23.86                        | 303.6                          | 118512.82    |
-| controllers   | 143          | 24.14                        | 308.9                          | 106056.19    |
+| reaper-aot    | 21           | 20                           | 88                             | 121,284      |
+| minimal-aot   | 21           | 18                           | 85                             | 119,071      |
+| reaper        | 108          | 20                           | 312                            | 110,220      |
+| carter        | 118          | 20                           | 313                            | 106,719      |
+| minimal       | 98           | 20                           | 313                            | 105,830      |
+| fastendpoints | 137          | 23                           | 317                            | 99,591       |
+| controllers   | 145          | 23                           | 316                            | 98,128       |
+
+This is from our original benchmark tool which just hits an endpoint with no interaction.
+
+| Framework     | Startup Time | Memory Usage (MiB) - Startup | Memory Usage (MiB) - Load Test | Requests/sec |
+|---------------|--------------|------------------------------|--------------------------------|--------------|
+| minimal-aot   | 21           | 21                           | 27                             | 144,060      |
+| reaper-aot    | 21           | 19                           | 31                             | 139,910      |
+| minimal       | 103          | 22                           | 258                            | 123,264      |
+| reaper        | 109          | 20                           | 294                            | 121,946      |
+| carter        | 115          | 23                           | 270                            | 121,725      |
+| fastendpoints | 134          | 24                           | 304                            | 118,513      |
+| controllers   | 143          | 24                           | 309                            | 106,056      |
 
 We've submitted to the TechEmpower Framework Benchmark, however preliminary results (from an M1 Ultra, 128GB RAM) are
 available for [plaintext](https://www.techempower.com/benchmarks/#section=test&shareid=75585734-6c92-4a79-8cc9-dab0979ffb38&hw=ph&test=plaintext)

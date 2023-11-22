@@ -11,15 +11,4 @@ public static class WebApplicationBuilderExtensions
     {
         throw new InvalidProgramException("Reaper Source Generator Interceptors not operative.");
     }
-
-    public static void AddReaperEndpoint<TEndpoint>(this IServiceCollection services, ServiceLifetime lifetime = ServiceLifetime.Singleton)
-        where TEndpoint: ReaperEndpointBase, new()
-    {
-        services.TryAdd(new ServiceDescriptor(typeof(TEndpoint), s =>
-        {
-            var ep = new TEndpoint();
-            ep.SetContextProvider(s.GetRequiredService<IReaperExecutionContextProvider>());
-            return ep;
-        }, lifetime));
-    }
 }
