@@ -65,7 +65,7 @@ internal class MapperInterceptorGenerator(ImmutableArray<ReaperDefinition> endpo
         codeWriter.AppendLine("(del, opts, _) =>");
         codeWriter.OpenBlock();
         codeWriter.AppendLine("var serviceProvider = (opts.ServiceProvider ?? opts.EndpointBuilder!.ApplicationServices)!;");
-        codeWriter.AppendLine("var endpoint = serviceProvider.GetRequiredService<");
+        codeWriter.Append("var endpoint = serviceProvider.GetRequiredService<");
         codeWriter.Append(endpoint.TypeName);
         codeWriter.AppendLine(">();");
         if (endpoint.HasRequest || endpoint.HasResponse)
