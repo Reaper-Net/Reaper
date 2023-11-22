@@ -156,8 +156,8 @@ public class TestRunner()
     private async Task<IImage> CreateAppImageAsync(string container)
     {
         var appImage = new ImageFromDockerfileBuilder()
-            .WithDockerfileDirectory(CommonDirectoryPath.GetSolutionDirectory(), "benchmarks/BenchmarkWeb")
-            .WithDockerfile(container + ".dockerfile")
+            .WithDockerfileDirectory(CommonDirectoryPath.GetSolutionDirectory(), string.Empty)
+            .WithDockerfile("benchmarks/BenchmarkWeb/" + container + ".dockerfile")
             .WithDeleteIfExists(true)
             .Build();
         await appImage.CreateAsync();

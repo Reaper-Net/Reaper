@@ -35,8 +35,9 @@
       <Compile Include="FastEndpoints\*.cs" />
     </ItemGroup>
     <ItemGroup Condition="$(DefineConstants.Contains(REAPER))">
-      <PackageReference Include="Reaper.Core" Version="0.1.0-alpha.0.10" />
-      <PackageReference Include="Reaper.SourceGenerator" Version="0.1.0-alpha.0.10" />
+      <ProjectReference Include="..\..\src\Reaper\Reaper.csproj" />
+      <ProjectReference Condition="'$(Configuration)' == 'Debug'" Include="..\..\src\Reaper.SourceGenerator\Reaper.SourceGenerator.csproj" ReferenceOutputAssembly="false" OutputItemType="Analyzer" />
+      <PackageReference Condition="'$(Configuration)' == 'Release'" Include="Reaper.SourceGenerator" Version="0.1.0-alpha.0" />
       <Compile Include="Reaper\*.cs" />
     </ItemGroup>
 

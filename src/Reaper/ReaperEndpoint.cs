@@ -1,10 +1,8 @@
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
 using Reaper.Context;
 
 namespace Reaper;
-
-public interface IReaperEndpointHasRequest {}
-public interface IReaperEndpointHasResponse {}
 
 public interface IReaperEndpoint
 {
@@ -19,8 +17,13 @@ public abstract class ReaperEndpointBase : IReaperEndpoint
     {
         reaperExecutionContextProvider = provider;
     }
-    
-    protected HttpContext Context => reaperExecutionContextProvider.Context.HttpContext;
+
+    protected HttpContext Context => reaperExecutionContextProvider!.Context.HttpContext;
+
+    protected HttpRequest Request => Context.Request;
+    protected HttpResponse Response => Context.Response;
+
+    protected T Resolve<T>() where T : notnull => reaperExecutionContextProvider!.Context.HttpContext.RequestServices.GetRequiredService<T>();
 }
 
 public abstract class ReaperEndpoint : ReaperEndpointBase
@@ -29,7 +32,7 @@ public abstract class ReaperEndpoint : ReaperEndpointBase
 }
 
 // ReSharper disable once InconsistentNaming
-public abstract class ReaperEndpointRX<TRequest> : ReaperEndpointBase, IReaperEndpointHasRequest
+public abstract class ReaperEndpointRX<TRequest> : ReaperEndpointBase
 {
     public abstract Task HandleAsync(TRequest request);
 }

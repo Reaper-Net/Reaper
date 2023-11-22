@@ -1,13 +1,14 @@
+using BenchmarkWeb.Services;
 using Reaper;
 using Reaper.Attributes;
 
 namespace BenchmarkWeb.Reaper;
 
 [ReaperRoute(HttpVerbs.Get, "/ep")]
-public class TestEndpoint : ReaperEndpointXR<string>
+public class TestEndpoint(GetMeAStringService svc) : ReaperEndpointXR<string>
 {
-    public override Task<string> HandleAsync()
+    public override async Task<string> HandleAsync()
     {
-        return Task.FromResult("Hello, World!");
+        return await svc.GetMeAString();
     }
 }

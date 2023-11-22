@@ -65,20 +65,18 @@ internal class MapperInterceptorGenerator(ImmutableArray<ReaperDefinition> endpo
         codeWriter.AppendLine("(del, opts, _) =>");
         codeWriter.OpenBlock();
         codeWriter.AppendLine("var serviceProvider = (opts.ServiceProvider ?? opts.EndpointBuilder!.ApplicationServices)!;");
+
         if (!endpoint.IsScoped)
         {
             codeWriter.Append("var endpoint = serviceProvider.GetRequiredService<");
             codeWriter.Append(endpoint.TypeName);
             codeWriter.AppendLine(">();");
-            codeWriter.AppendLine("endpoint.SetContextProvider(reaperCtxProvider);");
+            codeWriter.AppendLine("endpoint.SetContextProvider(reaperContextProvider);");
         }
 
         if (endpoint.HasRequest || endpoint.HasResponse)
         {
             codeWriter.AppendLine("var logOrThrowExceptionHelper = new LogOrThrowExceptionHelper(serviceProvider, opts);");
-            codeWriter.AppendLine("var jsonOptions = serviceProvider.GetService<IOptions<JsonOptions>>()?.Value ?? ReaperEndpointMapper.FallbackJsonOptions;");
-            codeWriter.AppendLine("var jsonSerializerOptions = jsonOptions.SerializerOptions;");
-            codeWriter.AppendLine("jsonSerializerOptions.MakeReadOnly();");
 
             if (endpoint.HasRequest)
             {
@@ -289,9 +287,15 @@ internal class MapperInterceptorGenerator(ImmutableArray<ReaperDefinition> endpo
         codeWriter.AppendLine("var endpointLog = LoggerMessage.Define<Type>(LogLevel.Debug, new EventId(1, \"ReaperEndpoint\"), \"Reaper endpoint {EndpointClass} mapped w/ injection\");");
         codeWriter.AppendLine("Debug(\"💀 Reaper is mapping endpoints\");");
         codeWriter.AppendLine(string.Empty);
-        codeWriter.AppendLine("var reaperCtxProvider = app.Services.GetRequiredService<IReaperExecutionContextProvider>();");
+        if (validEndpoints.Any(m => !m.RequiresReaperHandler))
+        {
+            codeWriter.AppendLine("// Common Services");
+            codeWriter.AppendLine("var reaperContextProvider = app.Services.GetRequiredService<Reaper.Context.IReaperExecutionContextProvider>();");
+            codeWriter.AppendLine("var jsonOptions = app.Services.GetService<IOptions<JsonOptions>>()?.Value ?? ReaperEndpointMapper.FallbackJsonOptions;");
+            codeWriter.AppendLine("var jsonSerializerOptions = jsonOptions.SerializerOptions;");
+        }
 
-                
+
         foreach (var endpoint in validEndpoints)
         {
             // This is the simpler case, so handle it first
