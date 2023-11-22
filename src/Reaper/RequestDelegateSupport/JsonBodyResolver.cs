@@ -5,7 +5,7 @@ namespace Reaper.RequestDelegateSupport;
 
 public static class JsonBodyResolver
 {
-    public static async ValueTask<(bool, T?)> TryResolveBodyAsync<T>(HttpContext httpContext, LogOrThrowExceptionHelper logOrThrowExceptionHelper, string parameterTypeName, string parameterName, JsonTypeInfo<T> jsonTypeInfo)
+    public static async ValueTask<(bool, T?)> TryResolveBodyAsync<T>(HttpContext httpContext, LogOrThrowExceptionHelper logOrThrowExceptionHelper, string parameterTypeName, string parameterName, JsonTypeInfo<T> jsonTypeInfo, bool required = true)
         {
             var feature = httpContext.Features.Get<Microsoft.AspNetCore.Http.Features.IHttpRequestBodyDetectionFeature>();
             T? bodyValue = default;
@@ -44,7 +44,7 @@ public static class JsonBodyResolver
                 }
             }
 
-            if (!bodyValueSet)
+            if (!bodyValueSet && required)
             {
                 logOrThrowExceptionHelper.ImplicitBodyNotProvided(parameterName);
                 httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;

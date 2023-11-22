@@ -1,105 +1,76 @@
-using System.Runtime.CompilerServices;
-using Microsoft.Extensions.Primitives;
+using System.Globalization;
 
 namespace Reaper.RequestDelegateSupport;
 
 public static class RequestHelpers
 {
-    [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
-    public static object? TryConvertValue(object value, Type destination)
+    public static bool TryConvertValue<T>(object value, out T? result)
     {
-        string sv;
-        if (value is StringValues)
+        string sv = value.ToString()!;
+        
+        if (typeof(T) == typeof(string))
         {
-            sv = value.ToString();
+            result = (T)(object)sv;
+            return true;
         }
-        else
+        if (typeof(T) == typeof(int))
         {
-            sv = (string)value;
-        }
-        if (destination == typeof(string))
+            if (int.TryParse(sv, CultureInfo.InvariantCulture, out var iv))
+            {
+                result = (T)(object)iv;
+                return true;
+            }
+        } else if (typeof(T) == typeof(double))
         {
-            return sv.ToString();
-        }
-        else if (destination == typeof(int))
+            if (double.TryParse(sv, CultureInfo.InvariantCulture, out var dv))
+            {
+                result = (T)(object)dv;
+                return true;
+            }
+        } else if (typeof(T) == typeof(float))
         {
-            return int.Parse(sv);
-        }
-        else if (destination == typeof(long))
+            if (float.TryParse(sv, CultureInfo.InvariantCulture, out var fv))
+            {
+                result = (T) (object)fv;
+                return true;
+            }
+        } else if (typeof(T) == typeof(decimal)) {
+            if (decimal.TryParse(sv, CultureInfo.InvariantCulture, out var dv))
+            {
+                result = (T) (object)dv;
+                return true;
+            }
+        } else if (typeof(T) == typeof(bool))
         {
-            return long.Parse(sv);
-        }
-        else if (destination == typeof(short))
+            if (bool.TryParse(sv, out var bv))
+            {
+                result = (T)(object)bv;
+                return true;
+            }
+        } else if (typeof(T) == typeof(DateTime))
         {
-            return short.Parse(sv);
-        }
-        else if (destination == typeof(byte))
+            if (DateTime.TryParse(sv, CultureInfo.InvariantCulture, out var dtv))
+            {
+                result = (T)(object)dtv;
+                return true;
+            }
+        } else if (typeof(T) == typeof(Guid))
         {
-            return byte.Parse(sv);
-        }
-        else if (destination == typeof(uint))
+            if (Guid.TryParse(sv, CultureInfo.InvariantCulture, out var g))
+            {
+                result = (T)(object)g;
+                return true;
+            }
+        } else if (typeof(T).IsEnum)
         {
-            return uint.Parse(sv);
+            if (Enum.TryParse(typeof(T), sv, true, out var ev))
+            {
+                result = (T) ev;
+                return true;
+            }
         }
-        else if (destination == typeof(ulong))
-        {
-            return ulong.Parse(sv);
-        }
-        else if (destination == typeof(ushort))
-        {
-            return ushort.Parse(sv);
-        }
-        else if (destination == typeof(sbyte))
-        {
-            return sbyte.Parse(sv);
-        }
-        else if (destination == typeof(float))
-        {
-            return float.Parse(sv);
-        }
-        else if (destination == typeof(double))
-        {
-            return double.Parse(sv);
-        }
-        else if (destination == typeof(decimal))
-        {
-            return decimal.Parse(sv);
-        }
-        else if (destination == typeof(bool))
-        {
-            return bool.Parse(sv);
-        }
-        else if (destination == typeof(Guid))
-        {
-            return Guid.Parse(sv);
-        }
-        else if (destination == typeof(DateTime))
-        {
-            return DateTime.Parse(sv);
-        }
-        else if (destination == typeof(DateTimeOffset))
-        {
-            return DateTimeOffset.Parse(sv);
-        }
-        else if (destination == typeof(TimeSpan))
-        {
-            return TimeSpan.Parse(sv);
-        }
-        else if (destination == typeof(Uri))
-        {
-            return new Uri(sv);
-        }
-        else if (destination == typeof(char))
-        {
-            return char.Parse(sv);
-        }
-        else if (destination == typeof(byte[]))
-        {
-            return Convert.FromBase64String(sv);
-        }
-        else
-        {
-            return null;
-        }
+        
+        result = default;
+        return false;
     }
 }

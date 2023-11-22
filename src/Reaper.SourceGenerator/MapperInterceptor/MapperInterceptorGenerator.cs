@@ -1,5 +1,6 @@
 using System.Collections.Immutable;
 using System.Text;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Operations;
 using Microsoft.CodeAnalysis.Text;
 using Reaper.SourceGenerator.Internal;
@@ -96,21 +97,35 @@ internal class MapperInterceptorGenerator(ImmutableArray<ReaperDefinition> endpo
             codeWriter.AppendLine("async Task Handler(HttpContext ctx)");
             codeWriter.OpenBlock();
 
+            var acceptsBody = endpoint.Verb is "POST" or "PUT" or "PATCH";
+
             if (endpoint.HasRequest)
             {
-                codeWriter.Append("var requestParseResult = await JsonBodyResolver.TryResolveBodyAsync<");
-                codeWriter.Append(endpoint.RequestBodyTypeName);
-                codeWriter.Append(">(ctx, logOrThrowExceptionHelper, \"");
-                codeWriter.Append(endpoint.RequestMap!.RequestBodyType.Name);
-                codeWriter.AppendLine("\", \"req\", jsonTypeInfoRequest);");
-                codeWriter.AppendLine("if (!requestParseResult.Item1)");
-                codeWriter.OpenBlock();
-                codeWriter.AppendLine("return;");
-                codeWriter.CloseBlock();
+                if (acceptsBody)
+                {
+                    codeWriter.Append("var requestParseResult = await JsonBodyResolver.TryResolveBodyAsync<");
+                    codeWriter.Append(endpoint.RequestBodyTypeName);
+                    codeWriter.Append(">(ctx, logOrThrowExceptionHelper, \"");
+                    codeWriter.Append(endpoint.RequestMap!.RequestBodyType.Name);
+                    codeWriter.Append("\", \"req\", jsonTypeInfoRequest");
+                    if (ReferenceTypeIsNullable(endpoint.RequestMap.RequestBodyType))
+                    {
+                        codeWriter.Append(", false");
+                    }
+                    codeWriter.AppendLine(");");
+                    codeWriter.AppendLine("if (!requestParseResult.Item1)");
+                    codeWriter.OpenBlock();
+                    codeWriter.AppendLine("return;");
+                    codeWriter.CloseBlock();
+                }
+
                 if (!endpoint.RequestMap!.IsBoundRequest)
                 {
                     // If there's no binding to be done, just proxy through the JSON from the request
-                    codeWriter.AppendLine("var request = requestParseResult.Item2!;");
+                    if (acceptsBody)
+                    {
+                        codeWriter.AppendLine("var request = requestParseResult.Item2!;");
+                    }
                 }
                 else
                 {
@@ -120,32 +135,20 @@ internal class MapperInterceptorGenerator(ImmutableArray<ReaperDefinition> endpo
                     codeWriter.Append("var request = Activator.CreateInstance<");
                     codeWriter.Append(endpoint.RequestTypeName);
                     codeWriter.AppendLine(">();");
-                    codeWriter.AppendLine("// [FromBody]");
-                    codeWriter.Append("request.");
-                    codeWriter.Append(requestMap.RequestBodyProperty!.Name);
-                    codeWriter.AppendLine(" = requestParseResult.Item2!;");
+                    if (acceptsBody && requestMap.BoundRequestBody)
+                    {
+                        codeWriter.AppendLine("// [FromBody]");
+                        codeWriter.Append("request.");
+                        codeWriter.Append(requestMap.RequestBodyProperty!.Name);
+                        codeWriter.AppendLine(" = requestParseResult.Item2!;");
+                    }
 
                     if (requestMap.BoundRoutes)
                     {
                         codeWriter.AppendLine("// [FromRoute]");
                         foreach (var boundRoute in requestMap.RouteProperties!)
                         {
-                            codeWriter.Append("if (ctx.Request.RouteValues.TryGetValue(\"");
-                            codeWriter.Append(boundRoute.Key);
-                            codeWriter.Append("\", out var ");
-                            codeWriter.Append(boundRoute.Value.Name);
-                            codeWriter.AppendLine("FromRoute))");
-                            codeWriter.OpenBlock();
-                            codeWriter.Append("request.");
-                            codeWriter.Append(boundRoute.Value.Name);
-                            codeWriter.Append(" = (");
-                            codeWriter.Append(boundRoute.Value.Type.Name);
-                            codeWriter.Append(")RequestHelpers.TryConvertValue(");
-                            codeWriter.Append(boundRoute.Value.Name);
-                            codeWriter.Append("FromRoute, typeof(");
-                            codeWriter.Append(boundRoute.Value.Type.Name);
-                            codeWriter.AppendLine("));");
-                            codeWriter.CloseBlock();
+                            GenerateFromXConverted("RouteValues", boundRoute.Key, boundRoute.Value);
                         }
                     }
 
@@ -154,23 +157,7 @@ internal class MapperInterceptorGenerator(ImmutableArray<ReaperDefinition> endpo
                         codeWriter.AppendLine("// [FromQuery]");
                         foreach (var boundQuery in requestMap.QueryProperties!)
                         {
-                            // if (httpContext.Request.Query.TryGetValue("debug", out var debug)
-                            codeWriter.Append("if (ctx.Request.Query.TryGetValue(\"");
-                            codeWriter.Append(boundQuery.Key);
-                            codeWriter.Append("\", out var ");
-                            codeWriter.Append(boundQuery.Value.Name);
-                            codeWriter.AppendLine("FromQuery))");
-                            codeWriter.OpenBlock();
-                            codeWriter.Append("request.");
-                            codeWriter.Append(boundQuery.Value.Name);
-                            codeWriter.Append(" = (");
-                            codeWriter.Append(boundQuery.Value.Type.Name);
-                            codeWriter.Append(")RequestHelpers.TryConvertValue(");
-                            codeWriter.Append(boundQuery.Value.Name);
-                            codeWriter.Append("FromQuery, typeof(");
-                            codeWriter.Append(boundQuery.Value.Type.Name);
-                            codeWriter.AppendLine("));");
-                            codeWriter.CloseBlock();
+                            GenerateFromXConverted("Query", boundQuery.Key, boundQuery.Value);
                         }
                     }
                 }
@@ -212,59 +199,44 @@ internal class MapperInterceptorGenerator(ImmutableArray<ReaperDefinition> endpo
         
         codeWriter.AppendLine("return new RequestDelegateResult(Handler, ReadOnlyCollection<object>.Empty);");
         codeWriter.CloseBlock();
+    }
 
-        /*
-         * createRequestDelegate = (del, options, inferredMetadataResult) =>
-           {
-           var serviceProvider = options.ServiceProvider ?? options.EndpointBuilder.ApplicationServices;
-           var logOrThrowExceptionHelper = new LogOrThrowExceptionHelper(serviceProvider, options);
-           var jsonOptions = serviceProvider?.GetService<IOptions<JsonOptions>>()?.Value ?? FallbackJsonOptions;
-           var jsonSerializerOptions = jsonOptions.SerializerOptions;
-           jsonSerializerOptions.MakeReadOnly();
-           var jsonTypeInfoResponse = (JsonTypeInfo<TResponse?>)jsonSerializerOptions.GetTypeInfo(typeof(TResponse));
+    private bool ReferenceTypeIsNullable(ITypeSymbol type)
+    {
+        return type.NullableAnnotation == NullableAnnotation.Annotated;
+    }
 
-
-           var ep = serviceProvider!.GetRequiredService<TEndpoint>();
-
-           RequestDelegate handler;
-           if (typeof(TRequest) != typeof(TRequestBody))
-           {
-           // If this differs, it means we have a FromBody to parse out and stick in the Request
-           var filler = (Action<TRequest, TRequestBody>)builder.RequestBodyFiller!;
-           var jsonTypeInfo = (JsonTypeInfo<TRequestBody>)jsonSerializerOptions.GetTypeInfo(typeof(TRequestBody));
-           handler = async (HttpContext ctx) =>
-           {
-           var reqData = await JsonBodyResolver.TryResolveBodyAsync<TRequestBody>(ctx, logOrThrowExceptionHelper, typeof(TRequestBody).Name, "req", jsonTypeInfo);
-           if (!reqData.Item1)
-           {
-           return;
-           }
-
-           var map = Activator.CreateInstance<TRequest>();
-           filler(map, reqData.Item2!);
-           var res = await ((Func<TEndpoint, TRequest, Task<TResponse>>)del)(ep, map);
-           await ResponseHelpers.ExecuteReturnAsync(res, ctx, jsonTypeInfoResponse);
-           };
-           }
-           else
-           {
-           var jsonTypeInfo = (JsonTypeInfo<TRequest>)jsonSerializerOptions.GetTypeInfo(typeof(TRequest));
-           handler = async (HttpContext ctx) =>
-           {
-           var reqData = await JsonBodyResolver.TryResolveBodyAsync<TRequest>(ctx, logOrThrowExceptionHelper, typeof(TRequest).Name, "req", jsonTypeInfo);
-           if (!reqData.Item1)
-           {
-           return;
-           }
-
-           var res = await ((Func<TEndpoint, TRequest, Task<TResponse>>)del)(ep, reqData.Item2!);
-           await ResponseHelpers.ExecuteReturnAsync(res, ctx, jsonTypeInfoResponse);
-           };
-           }
-
-           return new RequestDelegateResult(handler, metadata);
-           };
-         */
+    private void GenerateFromXConverted(string from, string key, IPropertySymbol prop)
+    {
+        var useType = prop.Type;
+        var nullableValueType = (useType.IsValueType && useType is INamedTypeSymbol && prop.Type.OriginalDefinition.SpecialType == SpecialType.System_Nullable_T);
+        if (nullableValueType)
+        {
+            useType = ((INamedTypeSymbol) useType).TypeArguments[0];
+        }
+        
+        codeWriter.Append("if (ctx.Request.");
+        codeWriter.Append(from);
+        codeWriter.Append(".TryGetValue(\"");
+        codeWriter.Append(key);
+        codeWriter.Append("\", out var ");
+        codeWriter.Append(prop.Name);
+        codeWriter.AppendLine("Src) && RequestHelpers.TryConvertValue<");
+        codeWriter.Append(useType.Name);
+        codeWriter.Append(">(");
+        codeWriter.Append(prop.Name);
+        codeWriter.Append("Src!, out var ");
+        codeWriter.Append(prop.Name);
+        codeWriter.AppendLine("Conv))");
+        codeWriter.OpenBlock();
+        codeWriter.Append("request.");
+        codeWriter.Append(prop.Name);
+        codeWriter.Append(" = (");
+        codeWriter.Append(useType.Name);
+        codeWriter.Append(")");
+        codeWriter.Append(prop.Name);
+        codeWriter.AppendLine("Conv!;");
+        codeWriter.CloseBlock();
     }
 
     internal SourceText Generate()
