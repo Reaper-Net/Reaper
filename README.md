@@ -223,8 +223,8 @@ Our own internal tool for benchmarking is not scientific (it's mainly designed t
 over time), but it does have somewhat representative results to our goals (below ordered by req/sec).
 
 This is a sample injecting a (singleton) service from the most recent version of our tool. The service simply creates
-a stream, writes the "Hello, World!" strings to it in 2 parts, and reads it back as a string, returning it to the
-endpoint for return back.
+a memory stream, writes the "Hello, World!" string to it in 2 parts, reads it back as a string, and returns it to the
+endpoint for sending back to the client.
 
 The possible reason that we're faster in this scenario as we resolve the service up front, whereas Minimal APIs resolve
 them per request as they support scoped. This is basically the exact scenario that we're working towards.
