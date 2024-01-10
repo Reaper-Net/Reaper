@@ -190,10 +190,10 @@ If you are (de)serializing other types, it's recommended to create a new context
 
 ### Implementation
 
-Your Endpoint is injected as a *singleton*. This means that you should not store any state in your Endpoint (not that you
-would anyway, right?). Your HandleAsync method is invoked on a per-request basis.
+Your Endpoint is injected as a *singleton* by default. This means that you should not store any state in your Endpoint
+(not that you would anyway, right?). Your HandleAsync method is invoked on a per-request basis.
 
-To resolve services, use the `Resolve<TService>()` method (which includes singletons etc).
+To resolve services further services (scoped etc), use the `Resolve<TService>()` method (which includes singletons etc).
 
 An example would be:
 
@@ -201,7 +201,11 @@ An example would be:
 var myService = Resolve<IMyService>();
 ```
 
-If you want to use constructor injection, please note that this will only work for Singleton services.
+You can also use constructor injection, with the default rules being a singleton service being injected by the
+constructor, and use Resolve for any scoped services.
+
+Alternatively (though there may be a very minor performance hit), apply the `[ReaperScoped]` attribute to the endpoint
+and constructor injection will work the same way as you may be familiar with.
 
 ### What's coming
 

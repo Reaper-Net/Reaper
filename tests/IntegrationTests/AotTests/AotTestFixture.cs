@@ -3,10 +3,11 @@ using DotNet.Testcontainers.Containers;
 
 namespace IntegrationTests.AotTests;
 
+// ReSharper disable once ClassNeverInstantiated.Global
 public class AotTestFixture : IAsyncLifetime
 {
-    public IContainer Container { get; private set; }
-    public HttpClient Client { get; private set; }
+    public IContainer Container { get; private set; } = default!;
+    public HttpClient Client { get; private set; } = default!;
     
     public async Task InitializeAsync()
     {

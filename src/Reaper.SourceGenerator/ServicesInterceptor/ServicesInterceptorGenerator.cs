@@ -53,7 +53,7 @@ internal class ServicesInterceptorGenerator(ImmutableArray<ReaperDefinition> end
 
         foreach (var endpoint in validEndpoints)
         {
-            codeWriter.Append("app.Services.TryAddSingleton<");
+            codeWriter.Append("app.Services.AddReaperEndpoint<");
             codeWriter.Append(endpoint.TypeName);
             if (endpoint.IsScoped)
             {

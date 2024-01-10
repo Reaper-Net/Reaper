@@ -4,10 +4,11 @@ using Microsoft.Extensions.Logging;
 
 namespace IntegrationTests.WafTests;
 
+// ReSharper disable once ClassNeverInstantiated.Global
 public class WafTextFixture : IAsyncLifetime
 {
-    public WebApplicationFactory<Program> App { get; private set; }
-    public HttpClient Client { get; private set; }
+    public WebApplicationFactory<Program> App { get; private set; } = default!;
+    public HttpClient Client { get; private set; } = default!;
     
     public Task InitializeAsync()
     {
