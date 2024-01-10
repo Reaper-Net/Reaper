@@ -18,6 +18,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Benchmarker", "benchmarks\B
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BenchmarkWeb", "benchmarks\BenchmarkWeb\BenchmarkWeb.csproj", "{1D0B7DC1-0C7B-4C5E-87F3-3978A8151B6F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Reaper.Validation", "src\Reaper.Validation\Reaper.Validation.csproj", "{2C789211-0648-41D9-B14D-F45DB32074E5}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -52,6 +54,10 @@ Global
 		{1D0B7DC1-0C7B-4C5E-87F3-3978A8151B6F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1D0B7DC1-0C7B-4C5E-87F3-3978A8151B6F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1D0B7DC1-0C7B-4C5E-87F3-3978A8151B6F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2C789211-0648-41D9-B14D-F45DB32074E5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2C789211-0648-41D9-B14D-F45DB32074E5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2C789211-0648-41D9-B14D-F45DB32074E5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2C789211-0648-41D9-B14D-F45DB32074E5}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{12413687-45BD-4B12-93DD-5118AA6B1BE8} = {4E11526E-A855-40DB-BC78-24C0B503BE76}

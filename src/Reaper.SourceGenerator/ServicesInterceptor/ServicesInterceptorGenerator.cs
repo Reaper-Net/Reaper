@@ -55,7 +55,14 @@ internal class ServicesInterceptorGenerator(ImmutableArray<ReaperDefinition> end
         {
             codeWriter.Append("app.Services.TryAddSingleton<");
             codeWriter.Append(endpoint.TypeName);
-            codeWriter.AppendLine(">();");
+            if (endpoint.IsScoped)
+            {
+                codeWriter.Append(">(ServiceLifetime.Scoped);");
+            }
+            else
+            {
+                codeWriter.AppendLine(">();");
+            }
         }
 
         codeWriter.CloseBlock();

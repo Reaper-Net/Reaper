@@ -65,10 +65,13 @@ internal class MapperInterceptorGenerator(ImmutableArray<ReaperDefinition> endpo
         codeWriter.AppendLine("(del, opts, _) =>");
         codeWriter.OpenBlock();
         codeWriter.AppendLine("var serviceProvider = (opts.ServiceProvider ?? opts.EndpointBuilder!.ApplicationServices)!;");
-        codeWriter.Append("var endpoint = serviceProvider.GetRequiredService<");
-        codeWriter.Append(endpoint.TypeName);
-        codeWriter.AppendLine(">();");
-        codeWriter.AppendLine("endpoint.SetContextProvider(reaperContextProvider);");
+        if (!endpoint.IsScoped)
+        {
+            codeWriter.Append("var endpoint = serviceProvider.GetRequiredService<");
+            codeWriter.Append(endpoint.TypeName);
+            codeWriter.AppendLine(">();");
+            codeWriter.AppendLine("endpoint.SetContextProvider(reaperContextProvider);");
+        }
         if (endpoint.HasRequest || endpoint.HasResponse)
         {
             codeWriter.AppendLine("var logOrThrowExceptionHelper = new LogOrThrowExceptionHelper(serviceProvider, opts);");
@@ -90,11 +93,21 @@ internal class MapperInterceptorGenerator(ImmutableArray<ReaperDefinition> endpo
                 codeWriter.Append(endpoint.ResponseTypeName);
                 codeWriter.AppendLine("));");
             }
+        }
 
-            codeWriter.AppendLine(string.Empty);
-            codeWriter.AppendLine("async Task Handler(HttpContext ctx)");
-            codeWriter.OpenBlock();
-
+        codeWriter.AppendLine(string.Empty);
+        codeWriter.AppendLine("async Task Handler(HttpContext ctx)");
+        codeWriter.OpenBlock();   
+        if (endpoint.IsScoped)
+        {
+            codeWriter.Append("var endpoint = ctx.RequestServices.GetRequiredService<");
+            codeWriter.Append(endpoint.TypeName);
+            codeWriter.AppendLine(">();");
+            codeWriter.AppendLine("endpoint.SetContextProvider(reaperContextProvider);");
+        }
+        
+        if (endpoint.HasRequest || endpoint.HasResponse)
+        {
             var acceptsBody = endpoint.Verb is "POST" or "PUT" or "PATCH";
 
             if (endpoint.HasRequest)
@@ -182,18 +195,14 @@ internal class MapperInterceptorGenerator(ImmutableArray<ReaperDefinition> endpo
             }
             else
             {
-                if (!endpoint.HasResponse)
-                {
-                    codeWriter.Append("await endpoint.HandleAsync(request);");
-                }
+                codeWriter.Append("await endpoint.HandleAsync(request);");
             }
-            codeWriter.CloseBlock();
         }
         else
         {
-            codeWriter.AppendLine(string.Empty);
-            codeWriter.AppendLine("Task Handler(HttpContext _) => endpoint.HandleAsync();");
+            codeWriter.AppendLine("await endpoint.HandleAsync();");
         }
+        codeWriter.CloseBlock();
         
         codeWriter.AppendLine("return new RequestDelegateResult(Handler, ReadOnlyCollection<object>.Empty);");
         codeWriter.CloseBlock();
@@ -253,6 +262,7 @@ internal class MapperInterceptorGenerator(ImmutableArray<ReaperDefinition> endpo
         codeWriter.AppendLine("using System.Collections.ObjectModel;");
         codeWriter.AppendLine("using System.Runtime.CompilerServices;");
         codeWriter.AppendLine("using System.Text.Json.Serialization.Metadata;");
+        codeWriter.AppendLine("using Reaper.Context;");
         if (validEndpoints.Any(m => !m.RequiresReaperHandler))
         {
             codeWriter.AppendLine("using Reaper.RequestDelegateSupport;");
