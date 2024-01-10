@@ -19,4 +19,25 @@ public abstract class ReaperEndpointRXTests(HttpClient client)
         Assert.Equal(HttpStatusCode.OK, resp.StatusCode);
         Assert.Equal(expected, str);
     }
+
+    [Fact]
+    public async Task InvalidValidationShouldThrow400()
+    {
+        var resp = await client.PostAsJsonAsync("/rerx/validator", new ValidatorWriteRequest
+        {
+            Message = null
+        });
+        var str = await resp.Content.ReadAsStringAsync();
+        
+    }
+    
+    [Fact]
+    public async Task ValidValidationShouldNotThrow400()
+    {
+        var resp = await client.PostAsJsonAsync("/rerx/validator", new ValidatorWriteRequest
+        {
+            Message = "Hello"
+        });
+        Assert.Equal(HttpStatusCode.OK, resp.StatusCode);
+    }
 }

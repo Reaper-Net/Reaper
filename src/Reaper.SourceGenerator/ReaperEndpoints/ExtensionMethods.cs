@@ -27,6 +27,26 @@ internal static class ExtensionMethods
         return (node as ClassDeclarationSyntax)!.BaseList!.Types.Any(m => m.Type.ToString().Contains("ReaperEndpoint"));
     }
     
+    internal static bool IsValidatorTarget(this SyntaxNode node)
+    {
+        var sc = node is ClassDeclarationSyntax
+        {
+            BaseList:
+            {
+                Types:
+                {
+                    Count: > 0,
+                },
+            },
+        };
+        if (!sc)
+        {
+            return false;
+        }
+
+        return (node as ClassDeclarationSyntax)!.BaseList!.Types.Any(m => m.Type.ToString().Contains("RequestValidator"));
+    }
+    
     internal static IInvocationOperation? TransformValidInvocation(this GeneratorSyntaxContext ctx, CancellationToken ct)
     {
         var reaperOperation = ctx.GetValidReaperInvokationOperation(ct);
@@ -48,17 +68,46 @@ internal static class ExtensionMethods
         // LineSpan.LinePosition is 0-indexed, but we want to display 1-indexed line and character numbers in the interceptor attribute.
         return (filePath, lineSpan.StartLinePosition.Line + 1, lineSpan.StartLinePosition.Character + 1);
     }
+
+    internal static INamedTypeSymbol? FindValidatorForRequest(this INamespaceSymbol namespaceSymbol, WellKnownTypes wellKnownTypes, ITypeSymbol requestTypeSymbol)
+    {
+        if (wellKnownTypes.ReaperRequestValidator == null)
+        {
+            return default;
+        }
+        
+        foreach (var member in namespaceSymbol.GetMembers())
+        {
+            if (member is INamedTypeSymbol typeSymbol && typeSymbol.BaseType != null)
+            {
+                if (typeSymbol.BaseType.EqualsWithoutGeneric(wellKnownTypes.ReaperRequestValidator))
+                {
+                    var bt = typeSymbol.BaseType.TypeArguments;
+                    foreach (var memb in bt)
+                    {
+                        if (SymbolEqualityComparer.Default.Equals(memb, requestTypeSymbol))
+                        {
+                            return typeSymbol;
+                        }
+                    }
+                }
+            }
+        }
+
+        return default;
+    }
     
     internal static (bool valid, ReaperDefinition? definition) GetValidReaperDefinition(this GeneratorSyntaxContext ctx, CancellationToken ct)
     {
         var wellKnownTypes = WellKnownTypes.GetOrCreate(ctx.SemanticModel.Compilation);
         var symbol = ctx.SemanticModel.GetDeclaredSymbol(ctx.Node, ct) as INamedTypeSymbol;
+        
         var baseSymbol = symbol?.BaseType;
         var baseBaseSymbol = baseSymbol?.BaseType;
         if (baseBaseSymbol?.Equals(wellKnownTypes.ReaperEndpointBase, SymbolEqualityComparer.Default) == true)
         {
             bool isRequest = !baseSymbol!.EqualsWithoutGeneric(wellKnownTypes.ReaperEndpointXR);
-            ITypeSymbol? request = default, response = default;
+            ITypeSymbol? request = default, validator = default, response = default;
             
             foreach (var typeArg in baseSymbol!.TypeArguments)
             {
@@ -66,6 +115,8 @@ internal static class ExtensionMethods
                 {
                     request = typeArg;
                     isRequest = false;
+                    
+                    validator = typeArg.ContainingNamespace.FindValidatorForRequest(wellKnownTypes, typeArg);
                 }
                 else
                 {
@@ -94,7 +145,7 @@ internal static class ExtensionMethods
 
             if (request != null)
             {
-                requestTypeMap = new RequestTypeMap(request, wellKnownTypes);
+                requestTypeMap = new RequestTypeMap(request, wellKnownTypes, validator);
             }
 
             var optimisationType = ResponseOptimisationType.None;

@@ -8,7 +8,7 @@ namespace Reaper;
 
 public static class WebApplicationBuilderExtensions
 {
-    public static void UseReaper(this WebApplicationBuilder builder)
+    public static void UseReaper(this WebApplicationBuilder builder, Action<ReaperOptions>? configure = null)
     {
         throw new InvalidProgramException("Reaper Source Generator Interceptors not operative.");
     }

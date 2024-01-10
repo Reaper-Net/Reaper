@@ -1,0 +1,8 @@
+@endpoint = http://localhost:5123
+
+POST {{endpoint}}/rerx/validator
+Content-Type: application/json
+
+{
+  "message": null
+}

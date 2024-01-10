@@ -29,9 +29,11 @@ internal class ServicesInterceptorGenerator(ImmutableArray<ReaperDefinition> end
         codeWriter.Append(", ");
         codeWriter.Append(location.pos);
         codeWriter.AppendLine(")]");
-        codeWriter.AppendLine("public static void UseReaper_Impl(this WebApplicationBuilder app)");
+        codeWriter.AppendLine("public static void UseReaper_Impl(this WebApplicationBuilder app, Action<ReaperOptions>? configure = null)");
         codeWriter.AppendLine("{");
         codeWriter.In();
+        codeWriter.AppendLine("var options = new ReaperOptions();");
+        codeWriter.AppendLine("configure?.Invoke(options);");
         codeWriter.AppendLine("app.Services.TryAddSingleton<IReaperExecutionContextProvider, ReaperExecutionContextProvider>();");
         codeWriter.AppendLine(string.Empty);
 
@@ -53,14 +55,21 @@ internal class ServicesInterceptorGenerator(ImmutableArray<ReaperDefinition> end
 
         foreach (var endpoint in validEndpoints)
         {
-            codeWriter.Append("app.Services.TryAddSingleton<");
+            codeWriter.Append("app.Services.AddReaperEndpoint<");
             codeWriter.Append(endpoint.TypeName);
             if (endpoint.IsScoped)
             {
-                codeWriter.Append(">(ServiceLifetime.Scoped);");
+                codeWriter.AppendLine(">(ServiceLifetime.Scoped);");
             }
             else
             {
+                codeWriter.AppendLine(">();");
+            }
+            
+            if (endpoint.HasRequestValidator)
+            {
+                codeWriter.Append("app.Services.AddSingleton<");
+                codeWriter.Append(endpoint.RequestValidatorTypeName);
                 codeWriter.AppendLine(">();");
             }
         }

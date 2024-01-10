@@ -40,7 +40,9 @@ internal class WellKnownTypes(Compilation compilation)
     
     private readonly Lazy<INamedTypeSymbol> stringType = new(() => compilation.GetTypeByMetadataName("System.String")!);
     internal INamedTypeSymbol StringType => stringType.Value;
-
+    
+    private readonly Lazy<INamedTypeSymbol?> reaperRequestValidator = new(() => compilation.GetTypeByMetadataName("Reaper.Validation.RequestValidator`1"));
+    internal INamedTypeSymbol? ReaperRequestValidator => reaperRequestValidator.Value;
     
     private static WellKnownTypes? instance;
     internal static WellKnownTypes GetOrCreate(Compilation compilation)

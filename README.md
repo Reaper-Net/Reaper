@@ -171,6 +171,33 @@ public class RequestOnlyEndpoint : ReaperEndpointRX<TRequest> { /* Use the Reque
 public class ResponseOnlyEndpoint : ReaperEndpointXR<TResponse> { /* Use the Response only */ }
 ```
 
+### Validators
+
+To add validation support (via FluentValidation), add [Reaper.Validation]() from NuGet.
+
+You can then create validators (**NOTE** They must be in the same namespace as the Request object currently) by extending
+from `ReaperValidator<TRequest>` and using FluentValidator just as you normally would:
+
+```csharp
+public class TestRequest
+{
+    public string Test { get; set; }
+}
+
+public class TestRequestValidator : ReaperValidator<TestRequest>
+{
+    public TestRequestValidator()
+    {
+        RuleFor(x => x.Test).NotEmpty();
+    }
+}
+```
+
+Note again that validators are created as singletons. You can currently only define simple validation rules, but soon
+the same type of mapping will be applied as for endpoints (reusing `[ReaperScoped]`).
+
+Problem Details are still TODO.
+
 ### Native AOT Support
 
 The core of Reaper is Native AOT compatible.

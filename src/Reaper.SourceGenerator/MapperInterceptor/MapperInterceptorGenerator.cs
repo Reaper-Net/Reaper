@@ -62,6 +62,7 @@ internal class MapperInterceptorGenerator(ImmutableArray<ReaperDefinition> endpo
 
     private void GenerateDirectReaperRequestDelegateGenerator(ReaperDefinition endpoint)
     {
+        Console.WriteLine(endpoint.Route + " Validator: " + endpoint.HasRequestValidator);
         codeWriter.AppendLine("(del, opts, _) =>");
         codeWriter.OpenBlock();
         codeWriter.AppendLine("var serviceProvider = (opts.ServiceProvider ?? opts.EndpointBuilder!.ApplicationServices)!;");
@@ -104,6 +105,13 @@ internal class MapperInterceptorGenerator(ImmutableArray<ReaperDefinition> endpo
             codeWriter.Append(endpoint.TypeName);
             codeWriter.AppendLine(">();");
             codeWriter.AppendLine("endpoint.SetContextProvider(reaperContextProvider);");
+        }
+
+        if (endpoint.HasRequestValidator)
+        {
+            codeWriter.Append("var validator = ctx.RequestServices.GetRequiredService<");
+            codeWriter.Append(endpoint.RequestValidatorTypeName);
+            codeWriter.AppendLine(">();");
         }
         
         if (endpoint.HasRequest || endpoint.HasResponse)
@@ -171,6 +179,18 @@ internal class MapperInterceptorGenerator(ImmutableArray<ReaperDefinition> endpo
                             GenerateFromXConverted("Query", boundQuery.Key, boundQuery.Value);
                         }
                     }
+                }
+
+                if (endpoint.HasRequestValidator)
+                {
+                    codeWriter.AppendLine("// Validation");
+                    codeWriter.AppendLine("var validationResult = await validator.ValidateAsync(request);");
+                    codeWriter.AppendLine("if (!validationResult.IsValid)");
+                    codeWriter.OpenBlock();
+                    codeWriter.AppendLine("ctx.Response.StatusCode = 400;");
+                    codeWriter.AppendLine("await ctx.Response.WriteAsJsonAsync(validationResult.Errors);");
+                    codeWriter.AppendLine("return;");
+                    codeWriter.CloseBlock();
                 }
             }
 

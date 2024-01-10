@@ -11,6 +11,7 @@ internal record ReaperDefinition(ClassDeclarationSyntax ClassDeclarationSyntax, 
     
     public RequestTypeMap? RequestMap { get; init; }
     public bool HasRequest => RequestMap != null;
+    public bool HasRequestValidator => HasRequest && RequestMap!.ValidatorType != null;
     
     public ITypeSymbol? ResponseSymbol { get; init; }
     public bool HasResponse => ResponseSymbol != null;
@@ -32,6 +33,9 @@ internal record ReaperDefinition(ClassDeclarationSyntax ClassDeclarationSyntax, 
     
     private string? requestTypeName;
     public string RequestTypeName => requestTypeName ??= RequestMap?.RequestType?.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat) ?? string.Empty;
+    
+    private string? requestValidatorTypeName;
+    public string RequestValidatorTypeName => requestValidatorTypeName ??= RequestMap?.ValidatorType?.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat) ?? string.Empty;
     
     private string? requestBodyTypeName;
     public string RequestBodyTypeName => requestBodyTypeName ??= RequestMap?.RequestBodyType?.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat) ?? string.Empty;
@@ -57,6 +61,7 @@ internal record RequestTypeMap
     public bool IsBoundRequest { get; set; }
     
     public ITypeSymbol RequestType { get; init; }
+    public ITypeSymbol? ValidatorType { get; init; }
     public ITypeSymbol RequestBodyType { get; init; }
     public IPropertySymbol? RequestBodyProperty { get; init; }
     public bool BoundRequestBody => RequestBodyProperty != null;
@@ -68,10 +73,11 @@ internal record RequestTypeMap
     
     public ImmutableArray<IPropertySymbol> Properties { get; init; }
     
-    internal RequestTypeMap(ITypeSymbol type, WellKnownTypes wkt)
+    internal RequestTypeMap(ITypeSymbol type, WellKnownTypes wkt, ITypeSymbol? validator)
     {
         RequestType = type;
         RequestBodyType = type;
+        ValidatorType = validator;
         Properties = type.GetMembers()
             .OfType<IPropertySymbol>()
             .Where(m => m.DeclaredAccessibility == Accessibility.Public)
