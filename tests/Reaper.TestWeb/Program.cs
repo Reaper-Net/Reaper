@@ -6,6 +6,8 @@ using Reaper.TestWeb;
 
 var builder = WebApplication.CreateSlimBuilder(args);
 builder.Services.AddScoped<HelloWorldProvider>();
+builder.Services.AddKeyedSingleton<HelloWorldProvider>("hw_singleton");
+
 builder.UseReaper();
 
 var app = builder.Build();

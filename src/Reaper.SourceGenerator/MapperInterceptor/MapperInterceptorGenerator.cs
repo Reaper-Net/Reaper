@@ -65,9 +65,14 @@ internal class MapperInterceptorGenerator(ImmutableArray<ReaperDefinition> endpo
         codeWriter.AppendLine("(del, opts, _) =>");
         codeWriter.OpenBlock();
         codeWriter.AppendLine("var serviceProvider = (opts.ServiceProvider ?? opts.EndpointBuilder!.ApplicationServices)!;");
-        codeWriter.Append("var endpoint = serviceProvider.GetRequiredService<");
-        codeWriter.Append(endpoint.TypeName);
-        codeWriter.AppendLine(">();");
+        if (!endpoint.IsScoped)
+        {
+            codeWriter.Append("var endpoint = serviceProvider.GetRequiredService<");
+            codeWriter.Append(endpoint.TypeName);
+            codeWriter.AppendLine(">();");
+            codeWriter.AppendLine("endpoint.SetContextProvider(reaperCtxProvider);");
+        }
+
         if (endpoint.HasRequest || endpoint.HasResponse)
         {
             codeWriter.AppendLine("var logOrThrowExceptionHelper = new LogOrThrowExceptionHelper(serviceProvider, opts);");
@@ -92,11 +97,21 @@ internal class MapperInterceptorGenerator(ImmutableArray<ReaperDefinition> endpo
                 codeWriter.Append(endpoint.ResponseTypeName);
                 codeWriter.AppendLine("));");
             }
+        }
 
-            codeWriter.AppendLine(string.Empty);
-            codeWriter.AppendLine("async Task Handler(HttpContext ctx)");
-            codeWriter.OpenBlock();
-
+        codeWriter.AppendLine(string.Empty);
+        codeWriter.AppendLine("async Task Handler(HttpContext ctx)");
+        codeWriter.OpenBlock();   
+        if (endpoint.IsScoped)
+        {
+            codeWriter.Append("var endpoint = ctx.RequestServices.GetRequiredService<");
+            codeWriter.Append(endpoint.TypeName);
+            codeWriter.AppendLine(">();");
+            codeWriter.AppendLine("endpoint.SetContextProvider(reaperCtxProvider);");
+        }
+        
+        if (endpoint.HasRequest || endpoint.HasResponse)
+        {
             var acceptsBody = endpoint.Verb is "POST" or "PUT" or "PATCH";
 
             if (endpoint.HasRequest)
@@ -184,18 +199,14 @@ internal class MapperInterceptorGenerator(ImmutableArray<ReaperDefinition> endpo
             }
             else
             {
-                if (!endpoint.HasResponse)
-                {
-                    codeWriter.Append("await endpoint.HandleAsync(request);");
-                }
+                codeWriter.Append("await endpoint.HandleAsync(request);");
             }
-            codeWriter.CloseBlock();
         }
         else
         {
-            codeWriter.AppendLine(string.Empty);
-            codeWriter.AppendLine("Task Handler(HttpContext _) => endpoint.HandleAsync();");
+            codeWriter.AppendLine("await endpoint.HandleAsync();");
         }
+        codeWriter.CloseBlock();
         
         codeWriter.AppendLine("return new RequestDelegateResult(Handler, ReadOnlyCollection<object>.Empty);");
         codeWriter.CloseBlock();
@@ -255,6 +266,7 @@ internal class MapperInterceptorGenerator(ImmutableArray<ReaperDefinition> endpo
         codeWriter.AppendLine("using System.Collections.ObjectModel;");
         codeWriter.AppendLine("using System.Runtime.CompilerServices;");
         codeWriter.AppendLine("using System.Text.Json.Serialization.Metadata;");
+        codeWriter.AppendLine("using Reaper.Context;");
         if (validEndpoints.Any(m => !m.RequiresReaperHandler))
         {
             codeWriter.AppendLine("using Reaper.RequestDelegateSupport;");
@@ -277,6 +289,7 @@ internal class MapperInterceptorGenerator(ImmutableArray<ReaperDefinition> endpo
         codeWriter.AppendLine("var endpointLog = LoggerMessage.Define<Type>(LogLevel.Debug, new EventId(1, \"ReaperEndpoint\"), \"Reaper endpoint {EndpointClass} mapped w/ injection\");");
         codeWriter.AppendLine("Debug(\"💀 Reaper is mapping endpoints\");");
         codeWriter.AppendLine(string.Empty);
+        codeWriter.AppendLine("var reaperCtxProvider = app.Services.GetRequiredService<IReaperExecutionContextProvider>();");
 
                 
         foreach (var endpoint in validEndpoints)
@@ -306,96 +319,6 @@ internal class MapperInterceptorGenerator(ImmutableArray<ReaperDefinition> endpo
                 GenerateDirectReaperDefinition(endpoint);
             }
             
-            codeWriter.Append("EndpointMapped<");
-            codeWriter.Append(endpoint.TypeName);
-            codeWriter.AppendLine(">();");
-            codeWriter.AppendLine(string.Empty);
-
-            continue;
-            
-            if (endpoint.RequiresReaperHandler || (!endpoint.HasRequest && !endpoint.HasResponse))
-            {
-                codeWriter.Append($"ReaperMapper.MapEndpoint<");
-                codeWriter.Append(endpoint.TypeName);
-            } else if (endpoint.HasRequest && !endpoint.HasResponse)
-            {
-                if (endpoint.RequestMap!.IsBoundRequest && endpoint.RequestMap!.BoundRequestBody)
-                    codeWriter.Append("ReaperMapper.MapEndpointWithRequestBody<");
-                else
-                    codeWriter.Append($"ReaperMapper.MapEndpointWithRequest<");
-                codeWriter.Append(endpoint.TypeName);
-                codeWriter.Append(", ");
-                codeWriter.Append(endpoint.RequestTypeName);
-                if (endpoint.RequestMap!.IsBoundRequest && endpoint.RequestMap!.BoundRequestBody)
-                    codeWriter.Append(endpoint.RequestBodyTypeName);
-            } else if (!endpoint.HasRequest && endpoint.HasResponse)
-            {
-                codeWriter.Append($"ReaperMapper.MapEndpointWithResponse<");
-                codeWriter.Append(endpoint.TypeName);
-                codeWriter.Append(", ");
-                codeWriter.Append(endpoint.ResponseTypeName);
-            } else
-            {
-                if (endpoint.RequestMap!.IsBoundRequest && endpoint.RequestMap!.BoundRequestBody)
-                    codeWriter.Append("ReaperMapper.MapEndpointWithRequestBodyAndResponse<");
-                else
-                    codeWriter.Append($"ReaperMapper.MapEndpointWithRequestAndResponse<");
-                codeWriter.Append(endpoint.TypeName);
-                codeWriter.Append(", ");
-                codeWriter.Append(endpoint.RequestTypeName);
-                if (endpoint.RequestMap!.IsBoundRequest && endpoint.RequestMap!.BoundRequestBody)
-                {
-                    codeWriter.Append(", ");
-                    codeWriter.Append(endpoint.RequestBodyTypeName);
-                }
-                codeWriter.Append(", ");
-                codeWriter.Append(endpoint.ResponseTypeName);
-            }
-            codeWriter.AppendLine(">(app, b => ");
-            
-            codeWriter.In();
-            codeWriter.Append("b.WithRoute(\"");
-            codeWriter.Append(endpoint.Route);
-            codeWriter.AppendLine("\")");
-            codeWriter.Append(" .WithVerb(\"");
-            codeWriter.Append(endpoint.Verb);
-            codeWriter.Append("\")");
-            if (endpoint.HasRequest)
-            {
-                codeWriter.AppendLine(string.Empty);
-                if (endpoint.RequestMap!.IsBoundRequest && endpoint.RequestMap!.BoundRequestBody)
-                {
-                    codeWriter.Append(" .WithRequestBody<");
-                    codeWriter.Append(endpoint.RequestTypeName);
-                    codeWriter.Append(", ");
-                    codeWriter.Append(endpoint.RequestBodyTypeName);
-                    codeWriter.Append(">((r, b) => r.");
-                    codeWriter.Append(endpoint.RequestMap.RequestBodyProperty!.Name);
-                    codeWriter.Append(" = b)");
-                }
-                else
-                {
-                    codeWriter.Append(" .WithRequest<");
-                    codeWriter.Append(endpoint.RequestTypeName);
-                    codeWriter.Append(">()");
-                }
-            }
-            if (endpoint.HasResponse)
-            {
-                codeWriter.AppendLine(string.Empty);
-                codeWriter.Append(" .WithResponse<");
-                codeWriter.Append(endpoint.ResponseTypeName);
-                codeWriter.Append(">()");
-            }
-            if (endpoint.RequiresReaperHandler)
-            {
-                codeWriter.AppendLine(string.Empty);
-                codeWriter.Append(" .WithReaperHandler()");
-            }
-
-            codeWriter.Out();
-            codeWriter.AppendLine(");");
-
             codeWriter.Append("EndpointMapped<");
             codeWriter.Append(endpoint.TypeName);
             codeWriter.AppendLine(">();");
