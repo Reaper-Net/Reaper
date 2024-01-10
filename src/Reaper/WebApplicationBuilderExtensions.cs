@@ -12,7 +12,7 @@ public static class WebApplicationBuilderExtensions
     {
         throw new InvalidProgramException("Reaper Source Generator Interceptors not operative.");
     }
-
+    
     public static void AddReaperEndpoint<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TEndpoint>(this IServiceCollection services, ServiceLifetime lifetime = ServiceLifetime.Singleton)
         where TEndpoint: ReaperEndpointBase
     {

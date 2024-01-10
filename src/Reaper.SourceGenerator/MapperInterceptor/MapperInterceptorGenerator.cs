@@ -65,7 +65,6 @@ internal class MapperInterceptorGenerator(ImmutableArray<ReaperDefinition> endpo
         codeWriter.AppendLine("(del, opts, _) =>");
         codeWriter.OpenBlock();
         codeWriter.AppendLine("var serviceProvider = (opts.ServiceProvider ?? opts.EndpointBuilder!.ApplicationServices)!;");
-
         if (!endpoint.IsScoped)
         {
             codeWriter.Append("var endpoint = serviceProvider.GetRequiredService<");
@@ -73,7 +72,6 @@ internal class MapperInterceptorGenerator(ImmutableArray<ReaperDefinition> endpo
             codeWriter.AppendLine(">();");
             codeWriter.AppendLine("endpoint.SetContextProvider(reaperContextProvider);");
         }
-
         if (endpoint.HasRequest || endpoint.HasResponse)
         {
             codeWriter.AppendLine("var logOrThrowExceptionHelper = new LogOrThrowExceptionHelper(serviceProvider, opts);");
@@ -105,7 +103,7 @@ internal class MapperInterceptorGenerator(ImmutableArray<ReaperDefinition> endpo
             codeWriter.Append("var endpoint = ctx.RequestServices.GetRequiredService<");
             codeWriter.Append(endpoint.TypeName);
             codeWriter.AppendLine(">();");
-            codeWriter.AppendLine("endpoint.SetContextProvider(reaperCtxProvider);");
+            codeWriter.AppendLine("endpoint.SetContextProvider(reaperContextProvider);");
         }
         
         if (endpoint.HasRequest || endpoint.HasResponse)
