@@ -46,7 +46,6 @@ public static class JsonBodyResolver
 
             if (!bodyValueSet && required)
             {
-                logOrThrowExceptionHelper.ImplicitBodyNotProvided(parameterName);
                 httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
                 return (false, bodyValue);
             }

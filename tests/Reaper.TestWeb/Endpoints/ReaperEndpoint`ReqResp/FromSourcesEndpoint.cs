@@ -19,8 +19,8 @@ public class FromSourcesEndpoint : ReaperEndpoint<FromSourcesEndpoint.FromSource
         [FromQuery] public int QueryValue { get; set; }
         
         [FromQuery(Name = "another")] public int AnotherQueryValue { get; set; }
-        
-        [FromBody] public JsonBound Json { get; set; }
+
+        [FromBody] public JsonBound Json { get; set; } = default!;
 
         public class JsonBound
         {

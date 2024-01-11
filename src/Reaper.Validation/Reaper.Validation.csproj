@@ -4,10 +4,41 @@
         <TargetFramework>net8.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
+        <OutputType>Library</OutputType>
+        <IsPackable>true</IsPackable>
+        <PackageId>Reaper.Validation</PackageId>
+        <RepositoryUrl>https://github.com/Reaper-Net/Reaper</RepositoryUrl>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+        <PackageTags>reaper,mvc,minimalapis,minimal,repr,validation</PackageTags>
+        <Description>
+            Adds FluentValidation support to Reaper.
+        </Description>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+        <MinVerMinimumMajorMinor>0.1</MinVerMinimumMajorMinor>
     </PropertyGroup>
-
+    
     <ItemGroup>
-      <PackageReference Include="FluentValidation" Version="11.9.0" />
+        <FrameworkReference Include="Microsoft.AspNetCore.App"/>
+    </ItemGroup>
+    
+    <ItemGroup>
+        <None Include="..\..\README.md" Pack="true" PackagePath="\" />
+    </ItemGroup>
+    
+    <ItemGroup>
+        <PackageReference Include="MinVer" Version="4.3.0">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="FluentValidation" Version="11.9.0" />
+    </ItemGroup>
+    
+    <ItemGroup>
+      <ProjectReference Include="..\Reaper\Reaper.csproj" />
+    </ItemGroup>
+    
+    <ItemGroup>
+      <ProjectReference Include="..\Reaper\Reaper.csproj" />
     </ItemGroup>
 
 </Project>

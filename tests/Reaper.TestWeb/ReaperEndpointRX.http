@@ -1,4 +1,4 @@
-@endpoint = http://localhost:5123
+@endpoint = http://localhost:55009
 
 POST {{endpoint}}/rerx/validator
 Content-Type: application/json
@@ -6,3 +6,6 @@ Content-Type: application/json
 {
   "message": null
 }
+
+###
+GET {{endpoint}}/re/string

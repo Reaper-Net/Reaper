@@ -14,6 +14,7 @@ public class AotTestFixture : IAsyncLifetime
         var image = new ImageFromDockerfileBuilder()
             .WithDockerfileDirectory(CommonDirectoryPath.GetSolutionDirectory(), string.Empty)
             .WithDockerfile("tests/Reaper.TestWeb/Dockerfile")
+            .WithDeleteIfExists(true)
             .Build();
         await image.CreateAsync();
         Container = new ContainerBuilder()

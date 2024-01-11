@@ -62,7 +62,6 @@ internal class MapperInterceptorGenerator(ImmutableArray<ReaperDefinition> endpo
 
     private void GenerateDirectReaperRequestDelegateGenerator(ReaperDefinition endpoint)
     {
-        Console.WriteLine(endpoint.Route + " Validator: " + endpoint.HasRequestValidator);
         codeWriter.AppendLine("(del, opts, _) =>");
         codeWriter.OpenBlock();
         codeWriter.AppendLine("var serviceProvider = (opts.ServiceProvider ?? opts.EndpointBuilder!.ApplicationServices)!;");
@@ -106,6 +105,7 @@ internal class MapperInterceptorGenerator(ImmutableArray<ReaperDefinition> endpo
             codeWriter.AppendLine(">();");
             codeWriter.AppendLine("endpoint.SetContextProvider(reaperContextProvider);");
         }
+        codeWriter.AppendLine("var valContext = reaperContextProvider.Context.ValidationContext;");
 
         if (endpoint.HasRequestValidator)
         {
@@ -117,6 +117,7 @@ internal class MapperInterceptorGenerator(ImmutableArray<ReaperDefinition> endpo
         if (endpoint.HasRequest || endpoint.HasResponse)
         {
             var acceptsBody = endpoint.Verb is "POST" or "PUT" or "PATCH";
+            var requestBodyIsOptional = !endpoint.HasRequest || (endpoint.HasRequest && ReferenceTypeIsNullable(endpoint.RequestMap!.RequestBodyType));
 
             if (endpoint.HasRequest)
             {
@@ -127,15 +128,20 @@ internal class MapperInterceptorGenerator(ImmutableArray<ReaperDefinition> endpo
                     codeWriter.Append(">(ctx, logOrThrowExceptionHelper, \"");
                     codeWriter.Append(endpoint.RequestMap!.RequestBodyType.Name);
                     codeWriter.Append("\", \"req\", jsonTypeInfoRequest");
-                    if (ReferenceTypeIsNullable(endpoint.RequestMap.RequestBodyType))
+                    if (requestBodyIsOptional)
                     {
                         codeWriter.Append(", false");
                     }
                     codeWriter.AppendLine(");");
-                    codeWriter.AppendLine("if (!requestParseResult.Item1)");
-                    codeWriter.OpenBlock();
-                    codeWriter.AppendLine("return;");
-                    codeWriter.CloseBlock();
+                    if (!requestBodyIsOptional)
+                    {
+                        codeWriter.AppendLine("if (!requestParseResult.Item1)");
+                        codeWriter.OpenBlock();
+                        codeWriter.AppendLine("valContext.FailureType = RequestValidationFailureType.BodyRequiredNotProvided;");
+                        codeWriter.AppendLine("await ctx.RequestServices.GetRequiredService<IValidationFailureHandler>().HandleValidationFailure();");
+                        codeWriter.AppendLine("return;");
+                        codeWriter.CloseBlock();
+                    }
                 }
 
                 if (!endpoint.RequestMap!.IsBoundRequest)
@@ -187,8 +193,10 @@ internal class MapperInterceptorGenerator(ImmutableArray<ReaperDefinition> endpo
                     codeWriter.AppendLine("var validationResult = await validator.ValidateAsync(request);");
                     codeWriter.AppendLine("if (!validationResult.IsValid)");
                     codeWriter.OpenBlock();
-                    codeWriter.AppendLine("ctx.Response.StatusCode = 400;");
-                    codeWriter.AppendLine("await ctx.Response.WriteAsJsonAsync(validationResult.Errors);");
+                    
+                    codeWriter.AppendLine("valContext.FailureType = RequestValidationFailureType.UserDefinedValidationFailure;");
+                    codeWriter.AppendLine("(valContext as FluentValidationContext)!.ValidationResult = validationResult;");
+                    codeWriter.AppendLine("await ctx.RequestServices.GetRequiredService<IValidationFailureHandler>().HandleValidationFailure();");
                     codeWriter.AppendLine("return;");
                     codeWriter.CloseBlock();
                 }
@@ -283,10 +291,13 @@ internal class MapperInterceptorGenerator(ImmutableArray<ReaperDefinition> endpo
         codeWriter.AppendLine("using System.Runtime.CompilerServices;");
         codeWriter.AppendLine("using System.Text.Json.Serialization.Metadata;");
         codeWriter.AppendLine("using Reaper.Context;");
+        codeWriter.AppendLine("using Reaper.Handlers;");
         if (validEndpoints.Any(m => !m.RequiresReaperHandler))
         {
             codeWriter.AppendLine("using Reaper.RequestDelegateSupport;");
         }
+        codeWriter.AppendLine("using Reaper.Validation;");
+        codeWriter.AppendLine("using Reaper.Validation.Context;");
         
         codeWriter.AppendLine(string.Empty);
         

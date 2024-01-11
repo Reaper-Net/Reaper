@@ -101,7 +101,7 @@ public class AListingEndpoint : ReaperEndpointXR<AListingResponse>
 ```
 
 Why? Well, first off it's a bit more explicit, you're not using generic types for your endpoints, rather a defined DTO.
-Also if you've ever built a real app, you'll know that _things change_, like a lot.
+Also if you've ever built a real app, you'll know that _things change_, like, a lot.
 
 What if you did want to add something else to the return from this endpoint? Without changing your implementation of
 clients etc, you can't. You'd have to change the type of the endpoint, which is a breaking change. With the above, you
@@ -175,6 +175,8 @@ public class ResponseOnlyEndpoint : ReaperEndpointXR<TResponse> { /* Use the Res
 
 To add validation support (via FluentValidation), add [Reaper.Validation]() from NuGet.
 
+Before your call to `UseReaper()`, also add `UseReaperValidation()`.
+
 You can then create validators (**NOTE** They must be in the same namespace as the Request object currently) by extending
 from `ReaperValidator<TRequest>` and using FluentValidator just as you normally would:
 
@@ -196,7 +198,15 @@ public class TestRequestValidator : ReaperValidator<TestRequest>
 Note again that validators are created as singletons. You can currently only define simple validation rules, but soon
 the same type of mapping will be applied as for endpoints (reusing `[ReaperScoped]`).
 
-Problem Details are still TODO.
+Validation results are formatted using a compatible version of the
+[RFC7807 Problem Details](https://datatracker.ietf.org/doc/html/rfc7807).
+
+You can override the response by implementing your own `IValidationFailureHandler`, you're basically responsible for
+doing everything to return a valid response (ie. you get the HttpContext, go wild). **This API is subject to change.**
+
+For Native AOT support, the actual result type returned is `Reaper.Validation.Responses.ValidationProblemDetails` and
+lives in its own JsonSerializerContext. If you're modifying the type returned yourself and need Native AOT support,
+you'll need your own context (see below).
 
 ### Native AOT Support
 
@@ -205,7 +215,7 @@ The core of Reaper is Native AOT compatible.
 We currently generate a context for JSON Source Generation named `ReaperJsonSerializerContext` which will work for all
 of your request and response objects.
 
-It's also registered automatically against the HttpJsonOptions, if you need to use them elsewhere you can register it
+It's also registered automatically against the Http.JsonOptions, if you need to use them elsewhere you can register it
 in the `.TypeResolverChain` of your `JsonSerializerOptions` like this:
 
 
@@ -213,7 +223,10 @@ in the `.TypeResolverChain` of your `JsonSerializerOptions` like this:
 options.SerializerOptions.TypeInfoResolverChain.Insert(0, ReaperJsonSerializerContext.Default);
 ```
 
-If you are (de)serializing other types, it's recommended to create a new context with the objects you require.
+If you are (de)serializing other types, it's recommended to create a new context with the objects you require. Due to
+the (super hacky) way that the context generator works, we're actually generating it in memory, so it's not possible to
+extend our context with your own types (even if you add another partial class). There's a [huge discussion](https://github.com/dotnet/roslyn/issues/57239)
+for chaining generators that is probably going nowhere, so we'll have to wait and see if this gets better.
 
 ### Implementation
 
@@ -243,7 +256,7 @@ and constructor injection will work the same way as you may be familiar with.
 - [ ] More documentation
 - [x] Tests, obvs
 - [ ] More examples
-- [ ] Support for [FluentValidation](https://github.com/FluentValidation/FluentValidation)
+- [x] Support for [FluentValidation](https://github.com/FluentValidation/FluentValidation)
 - [ ] Support for [MessagePack](https://github.com/MessagePack-CSharp/MessagePack-CSharp)
 - [ ] Support for [MemoryPack](https://github.com/Cysharp/MemoryPack)
 - [ ] 🤨 Our own bare metal (read: Kestrel) routing implementation? Who knows. Maybe.
@@ -296,3 +309,7 @@ tidied up in due course.
 
 We are building Reaper alongside our own microservice requirements which are currently running in production. If you
 have any feedback, please feel free to open an issue or PR.
+
+**Important**: Note that the API is subject to change. We're trying to make things as customisable as possible without
+sacrificing performance or, of course, AOT compatibility. But do note that in this version, if you've overridden certain
+things, they may change in the future.

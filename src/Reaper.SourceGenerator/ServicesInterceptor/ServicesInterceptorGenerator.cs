@@ -21,6 +21,8 @@ internal class ServicesInterceptorGenerator(ImmutableArray<ReaperDefinition> end
         codeWriter.AppendLine("using Microsoft.Extensions.DependencyInjection.Extensions;");
         codeWriter.AppendLine("using System.Runtime.CompilerServices;");
         codeWriter.AppendLine("using Reaper.Context;");
+        codeWriter.AppendLine("using Reaper.Handlers;");
+        codeWriter.AppendLine("using Reaper.Validation;");
         codeWriter.StartClass("ServiceAdditionInterceptor", "file static");
         codeWriter.Append("[InterceptsLocation(\"");
         codeWriter.Append(location.file);
@@ -34,6 +36,8 @@ internal class ServicesInterceptorGenerator(ImmutableArray<ReaperDefinition> end
         codeWriter.In();
         codeWriter.AppendLine("var options = new ReaperOptions();");
         codeWriter.AppendLine("configure?.Invoke(options);");
+        codeWriter.AppendLine("app.Services.TryAddTransient<IReaperExecutionContext, ReaperExecutionContext>();");
+        codeWriter.AppendLine("app.Services.TryAddTransient<IReaperValidationContext, ReaperValidationContext>();");
         codeWriter.AppendLine("app.Services.TryAddSingleton<IReaperExecutionContextProvider, ReaperExecutionContextProvider>();");
         codeWriter.AppendLine(string.Empty);
 
@@ -48,6 +52,9 @@ internal class ServicesInterceptorGenerator(ImmutableArray<ReaperDefinition> end
             codeWriter.AppendLine("});");
             codeWriter.Out();
         }
+
+        codeWriter.AppendLine("app.Services.TryAddScoped<IValidationFailureHandler, DefaultValidationFailureHandler>();");
+        codeWriter.AppendLine(string.Empty);
         
         codeWriter.AppendLine("// Endpoints");
                 

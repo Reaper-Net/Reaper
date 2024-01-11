@@ -8,7 +8,7 @@ namespace Reaper.RequestDelegateSupport;
 public static class ResponseHelpers
 {
     [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
-    public static Task ExecuteReturnAsync<T>(object? obj, HttpContext httpContext, JsonTypeInfo<T?> jsonTypeInfo)
+    public static Task ExecuteReturnAsync<T>(object? obj, HttpContext httpContext, JsonTypeInfo<T?> jsonTypeInfo, string? contentType = null)
     {
         if (obj is IResult r)
         {
@@ -20,20 +20,20 @@ public static class ResponseHelpers
         }
         else
         {
-            return WriteJsonResponseAsync(httpContext.Response, (T?)obj, jsonTypeInfo);
+            return WriteJsonResponseAsync(httpContext.Response, (T?)obj, jsonTypeInfo, contentType);
         }
     }
 
     [UnconditionalSuppressMessage("Trimming", "IL2026:RequiresUnreferencedCode",
         Justification = "The 'JsonSerializer.IsReflectionEnabledByDefault' feature switch, which is set to false by default for trimmed ASP.NET apps, ensures the JsonSerializer doesn't use Reflection.")]
     [UnconditionalSuppressMessage("AOT", "IL3050:RequiresDynamicCode", Justification = "See above.")]
-    private static Task WriteJsonResponseAsync<T>(HttpResponse response, T? value, JsonTypeInfo<T?> jsonTypeInfo)
+    private static Task WriteJsonResponseAsync<T>(HttpResponse response, T? value, JsonTypeInfo<T?> jsonTypeInfo, string? contentType = null)
     {
         var runtimeType = value?.GetType();
 
         if (jsonTypeInfo.ShouldUseWith(runtimeType))
         {
-            return HttpResponseJsonExtensions.WriteAsJsonAsync(response, value, jsonTypeInfo, default);
+            return response.WriteAsJsonAsync(value, jsonTypeInfo, contentType);
         }
 
         return response.WriteAsJsonAsync<object?>(value, jsonTypeInfo.Options);

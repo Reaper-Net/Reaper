@@ -16,6 +16,7 @@ internal class JsonContextGenerator(ImmutableArray<ReaperDefinition> endpoints)
         
         codeWriter.Namespace("Reaper.Generated");
         
+        codeWriter.AppendLine("using System.Collections.Generic;");
         codeWriter.AppendLine("using System.Text.Json.Serialization;");
         codeWriter.AppendLine(string.Empty);
 
@@ -36,6 +37,7 @@ internal class JsonContextGenerator(ImmutableArray<ReaperDefinition> endpoints)
             }
         }
         
+        codeWriter.AppendLine("[JsonSerializable(typeof(Dictionary<string, string>))]");
         codeWriter.StartClass("ReaperJsonSerializerContext", "public partial", "JsonSerializerContext", true);
         
         codeWriter.CloseBlock();

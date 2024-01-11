@@ -2,7 +2,7 @@ namespace Reaper.Context;
 
 public interface IReaperExecutionContextProvider
 {
-    public ReaperExecutionContext Context { get; }
+    public IReaperExecutionContext Context { get; }
 
-    internal void SetContext(ReaperExecutionContext context);
+    internal void SetContext(IReaperExecutionContext context);
 }
