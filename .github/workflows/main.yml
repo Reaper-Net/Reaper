@@ -37,8 +37,11 @@ jobs:
     - name: Publish Reaper
       if: steps.build.outcome == 'success'
       run: dotnet nuget push ./src/Reaper/bin/Release/*.nupkg --api-key ${{secrets.NUGET_PAT}} --skip-duplicate -s https://api.nuget.org/v3/index.json
-
       
     - name: Publish Source Generator
       if: steps.build.outcome == 'success'
       run: dotnet nuget push ./src/Reaper.SourceGenerator/bin/Release/*.nupkg --api-key ${{secrets.NUGET_PAT}} --skip-duplicate -s https://api.nuget.org/v3/index.json
+
+    - name: Publish Validation
+      if: steps.build.outcome == 'success'
+      run: dotnet nuget push ./src/Reaper.Validation/bin/Release/*.nupkg --api-key ${{secrets.NUGET_PAT}} --skip-duplicate -s https://api.nuget.org/v3/index.json
