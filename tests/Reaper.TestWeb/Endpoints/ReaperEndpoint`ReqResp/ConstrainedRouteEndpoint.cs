@@ -5,9 +5,10 @@ namespace Reaper.TestWeb.Endpoints.ReaperEndpoint_ReqResp;
 [ReaperRoute(HttpVerbs.Get, "/rerr/croute/{first:int}/{second:guid}/{third:datetime}/{fourth:bool}/{fifth:length(1,5)}/{sixth:range(5,10)}")]
 public class ConstrainedRouteEndpoint : ReaperEndpoint<ConstrainedRouteEndpoint.ConstrainedRouteEndpointRequestResponse, ConstrainedRouteEndpoint.ConstrainedRouteEndpointRequestResponse>
 {
-    public override Task<ConstrainedRouteEndpointRequestResponse> HandleAsync(ConstrainedRouteEndpointRequestResponse request)
+    public override Task ExecuteAsync(ConstrainedRouteEndpointRequestResponse request)
     {
-        return Task.FromResult(request);
+        Result = request;
+        return Task.CompletedTask;
     }
 
     public class ConstrainedRouteEndpointRequestResponse

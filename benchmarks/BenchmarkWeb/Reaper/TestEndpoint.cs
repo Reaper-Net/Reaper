@@ -7,8 +7,8 @@ namespace BenchmarkWeb.Reaper;
 [ReaperRoute(HttpVerbs.Get, "/ep")]
 public class TestEndpoint(GetMeAStringService svc) : ReaperEndpointXR<string>
 {
-    public override async Task<string> HandleAsync()
+    public override async Task ExecuteAsync()
     {
-        return await svc.GetMeAString();
+        Result = await svc.GetMeAString();
     }
 }

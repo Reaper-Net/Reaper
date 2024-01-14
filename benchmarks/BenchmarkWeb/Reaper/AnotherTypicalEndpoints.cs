@@ -7,7 +7,7 @@ namespace BenchmarkWeb.Reaper;
 [ReaperRoute(HttpVerbs.Get, "/anothertypical/dosomething")]
 public class AnotherTypicalEndpointDoSomething : ReaperEndpoint
 {
-    public override Task HandleAsync()
+    public override Task ExecuteAsync()
     {
         return Task.CompletedTask;
     }
@@ -16,7 +16,7 @@ public class AnotherTypicalEndpointDoSomething : ReaperEndpoint
 [ReaperRoute(HttpVerbs.Post, "/anothertypical/acceptsomething")]
 public class AnotherTypicalEndpointAcceptSomething : ReaperEndpointRX<SampleRequest>
 {
-    public override Task HandleAsync(SampleRequest request)
+    public override Task ExecuteAsync(SampleRequest request)
     {
         return Task.CompletedTask;
     }
@@ -25,14 +25,15 @@ public class AnotherTypicalEndpointAcceptSomething : ReaperEndpointRX<SampleRequ
 [ReaperRoute(HttpVerbs.Post, "/anothertypical/returnsomething")]
 public class AnotherTypicalEndpointReturnSomething : ReaperEndpoint<SampleRequest, SampleResponse>
 {
-    public override Task<SampleResponse> HandleAsync(SampleRequest request)
+    public override Task ExecuteAsync(SampleRequest request)
     {
-        return Task.FromResult(new SampleResponse()
+        Result = new SampleResponse()
         {
             Output = request.Input,
             SomeOtherOutput = request.SomeOtherInput,
             SomeBool = request.SomeBool,
             GeneratedAt = DateTime.UtcNow
-        });
+        };
+        return Task.CompletedTask;
     }
 }

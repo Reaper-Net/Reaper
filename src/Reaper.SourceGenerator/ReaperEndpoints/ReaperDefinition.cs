@@ -61,7 +61,7 @@ internal record RequestTypeMap
     public bool IsBoundRequest { get; set; }
     
     public ITypeSymbol RequestType { get; init; }
-    public ITypeSymbol? ValidatorType { get; init; }
+    public ITypeSymbol? ValidatorType { get; set; }
     public ITypeSymbol RequestBodyType { get; init; }
     public IPropertySymbol? RequestBodyProperty { get; init; }
     public bool BoundRequestBody => RequestBodyProperty != null;
@@ -73,11 +73,10 @@ internal record RequestTypeMap
     
     public ImmutableArray<IPropertySymbol> Properties { get; init; }
     
-    internal RequestTypeMap(ITypeSymbol type, WellKnownTypes wkt, ITypeSymbol? validator)
+    internal RequestTypeMap(ITypeSymbol type, WellKnownTypes wkt)
     {
         RequestType = type;
         RequestBodyType = type;
-        ValidatorType = validator;
         Properties = type.GetMembers()
             .OfType<IPropertySymbol>()
             .Where(m => m.DeclaredAccessibility == Accessibility.Public)
@@ -133,5 +132,10 @@ internal record RequestTypeMap
             QueryProperties = builder.ToImmutable();
             IsBoundRequest = true;
         }
+    }
+    
+    public void SetValidator(ITypeSymbol validatorType)
+    {
+        ValidatorType = validatorType;
     }
 }

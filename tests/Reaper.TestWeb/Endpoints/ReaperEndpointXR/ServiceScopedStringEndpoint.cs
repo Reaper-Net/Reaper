@@ -3,9 +3,10 @@ namespace Reaper.TestWeb.Endpoints.ReaperEndpointXR;
 [ReaperRoute(HttpVerbs.Get, "/rexr/service")]
 public class ServiceScopedStringEndpoint : ReaperEndpointXR<string>
 {
-    public override Task<string> HandleAsync()
+    public override Task ExecuteAsync()
     {
-        var service = Context.RequestServices.GetRequiredService<HelloWorldProvider>();
-        return Task.FromResult(service.GetHelloWorld());
+        var service = Resolve<HelloWorldProvider>();
+        Result = service.GetHelloWorld();
+        return Task.CompletedTask;
     }
 }

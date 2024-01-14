@@ -23,6 +23,7 @@ internal class ServicesInterceptorGenerator(ImmutableArray<ReaperDefinition> end
         codeWriter.AppendLine("using Reaper.Context;");
         codeWriter.AppendLine("using Reaper.Handlers;");
         codeWriter.AppendLine("using Reaper.Validation;");
+        codeWriter.AppendLine("using Reaper.Validation.Context;");
         codeWriter.StartClass("ServiceAdditionInterceptor", "file static");
         codeWriter.Append("[InterceptsLocation(\"");
         codeWriter.Append(location.file);

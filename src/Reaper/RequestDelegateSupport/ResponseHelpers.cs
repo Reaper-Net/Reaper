@@ -27,7 +27,7 @@ public static class ResponseHelpers
     [UnconditionalSuppressMessage("Trimming", "IL2026:RequiresUnreferencedCode",
         Justification = "The 'JsonSerializer.IsReflectionEnabledByDefault' feature switch, which is set to false by default for trimmed ASP.NET apps, ensures the JsonSerializer doesn't use Reflection.")]
     [UnconditionalSuppressMessage("AOT", "IL3050:RequiresDynamicCode", Justification = "See above.")]
-    private static Task WriteJsonResponseAsync<T>(HttpResponse response, T? value, JsonTypeInfo<T?> jsonTypeInfo, string? contentType = null)
+    public static Task WriteJsonResponseAsync<T>(HttpResponse response, T? value, JsonTypeInfo<T?> jsonTypeInfo, string? contentType = null)
     {
         var runtimeType = value?.GetType();
 
@@ -38,7 +38,6 @@ public static class ResponseHelpers
 
         return response.WriteAsJsonAsync<object?>(value, jsonTypeInfo.Options);
     }
-    
     
     private static bool HasKnownPolymorphism(this JsonTypeInfo jsonTypeInfo)
         => jsonTypeInfo.Type.IsSealed || jsonTypeInfo.Type.IsValueType || jsonTypeInfo.PolymorphismOptions is not null;

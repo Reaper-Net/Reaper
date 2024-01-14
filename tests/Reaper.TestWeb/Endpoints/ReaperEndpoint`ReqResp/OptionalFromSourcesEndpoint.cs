@@ -5,9 +5,10 @@ namespace Reaper.TestWeb.Endpoints.ReaperEndpoint_ReqResp;
 [ReaperRoute(HttpVerbs.Post, "/rerr/optfsource/{test?}/{anothertest?}")]
 public class OptionalFromSourcesEndpoint : ReaperEndpoint<OptionalFromSourcesEndpoint.OptionalFromSourcesRequestResponse, OptionalFromSourcesEndpoint.OptionalFromSourcesRequestResponse>
 {
-    public override Task<OptionalFromSourcesRequestResponse> HandleAsync(OptionalFromSourcesRequestResponse request)
+    public override Task ExecuteAsync(OptionalFromSourcesRequestResponse request)
     {
-        return Task.FromResult(request);
+        Result = request;
+        return Task.CompletedTask;
     }
 
     public class OptionalFromSourcesRequestResponse

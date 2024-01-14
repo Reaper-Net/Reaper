@@ -1,4 +1,4 @@
-namespace Reaper.Validation;
+namespace Reaper.Validation.Context;
 
 public class ReaperValidationContext : IReaperValidationContext
 {

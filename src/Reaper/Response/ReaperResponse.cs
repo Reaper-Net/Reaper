@@ -27,7 +27,7 @@ public class ReaperResponse : IResult
         
         httpContext.Response.StatusCode = statusCode;
         httpContext.Response.ContentType = contentType;
-        
+
         //await httpContext.Response.WriteAsJsonAsync("Hello World!");
     }
 }

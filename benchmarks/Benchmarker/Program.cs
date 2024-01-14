@@ -1,5 +1,6 @@
 ﻿using System.Text.Json;
 using Benchmarker;
+using FastEndpoints;
 using Spectre.Console;
 
 AnsiConsole.MarkupLine("[bold]💀 Reaper Benchmarker[/]");
@@ -7,15 +8,22 @@ AnsiConsole.MarkupLine("[bold]💀 Reaper Benchmarker[/]");
 var testRunner = new TestRunner();
 await testRunner.InitialiseAsync();
 
-var carter = await testRunner.ExecuteTestAsync("carter");
-var controllers = await testRunner.ExecuteTestAsync("controllers");
-var fastendpoints = await testRunner.ExecuteTestAsync("fastendpoints");
-var minimal = await testRunner.ExecuteTestAsync("minimal");
-var minimalAot = await testRunner.ExecuteTestAsync("minimal-aot");
-var reaper = await testRunner.ExecuteTestAsync("reaper");
-var reaperAot = await testRunner.ExecuteTestAsync("reaper-aot");
+List<TestResult> output = new();
 
-var output = new[] { carter, controllers, fastendpoints, minimal, minimalAot, reaper, reaperAot };
+// Carter
+//output.Add(await testRunner.ExecuteTestAsync("carter"));
+// Controllers
+//output.Add(await testRunner.ExecuteTestAsync("controllers"));
+// FastEndpoints
+output.Add(await testRunner.ExecuteTestAsync("fastendpoints"));
+// Minimal
+output.Add(await testRunner.ExecuteTestAsync("minimal"));
+// Minimal AOT
+//output.Add(await testRunner.ExecuteTestAsync("minimal-aot"));
+// Reaper
+output.Add(await testRunner.ExecuteTestAsync("reaper"));
+// Reaper AOT
+//output.Add(await testRunner.ExecuteTestAsync("reaper-aot"));
 
 if (AnsiConsole.Confirm("Do you want some output?"))
 {

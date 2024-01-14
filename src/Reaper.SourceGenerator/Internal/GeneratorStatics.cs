@@ -11,6 +11,7 @@ public static class GeneratorStatics
     public const string StepEndpoints = "Endpoints";
     public const string StepMapper = "Mapper";
     public const string StepServices = "Services";
+    public const string StepValidators = "Validators";
 
     public const string FileHeader = """
                                      //------------------------------------------------------------------------------

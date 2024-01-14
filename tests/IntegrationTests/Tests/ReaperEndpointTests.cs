@@ -45,4 +45,49 @@ public abstract class ReaperEndpointTests(HttpClient client)
         Assert.Equal(HttpStatusCode.OK, resp.StatusCode);
         Assert.Equal("Hello, World! Counter: 1", str);
     }
+
+    [Fact]
+    public async Task Status200Is200()
+    {
+        var resp = await client.GetAsync("/re/200");
+        Assert.Equal(HttpStatusCode.OK, resp.StatusCode);
+    }
+    
+    [Fact]
+    public async Task Status400Is400()
+    {
+        var resp = await client.GetAsync("/re/400");
+        Assert.Equal(HttpStatusCode.BadRequest, resp.StatusCode);
+    }
+    
+    [Fact]
+    public async Task Status404Is404()
+    {
+        var resp = await client.GetAsync("/re/404");
+        Assert.Equal(HttpStatusCode.NotFound, resp.StatusCode);
+    }
+    
+    [Fact]
+    public async Task Status200WriterIs200()
+    {
+        var resp = await client.GetAsync("/re/w200");
+        Assert.Equal(HttpStatusCode.OK, resp.StatusCode);
+        Assert.Equal("Hello, World!", await resp.Content.ReadAsStringAsync());
+    }
+    
+    [Fact]
+    public async Task Status400WriterIs400()
+    {
+        var resp = await client.GetAsync("/re/w400");
+        Assert.Equal(HttpStatusCode.BadRequest, resp.StatusCode);
+        Assert.Equal("Hello, World!", await resp.Content.ReadAsStringAsync());
+    }
+    
+    [Fact]
+    public async Task Status404WriterIs404()
+    {
+        var resp = await client.GetAsync("/re/w404");
+        Assert.Equal(HttpStatusCode.NotFound, resp.StatusCode);
+        Assert.Equal("Hello, World!", await resp.Content.ReadAsStringAsync());
+    }
 }

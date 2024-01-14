@@ -67,9 +67,9 @@ public class TestResponse
 [ReaperRoute(HttpVerbs.Post, "reflector")]
 public class ReflectorEndpoint : ReaperEndpoint<TestRequest, TestResponse>
 {
-    public override async Task<TestResponse> HandleAsync(TestRequest request)
+    public override async Task ExecuteAsync(TestRequest request)
     {
-        return new TestResponse()
+        Result = new TestResponse()
         {
             GeneratedAt = DateTime.UtcNow,
             Input = request.Test
@@ -79,6 +79,30 @@ public class ReflectorEndpoint : ReaperEndpoint<TestRequest, TestResponse>
 ```
 
 Enjoy.
+
+## Responses
+
+(This is a recent change and a work in progress)
+
+By default, your endpoint will return a 200 OK response with the Result property (which is typed). If you need to send
+something other than the typed response, you can use the `StatusCode` method (or others below).
+
+```csharp
+public override async Task ExecuteAsync(MyRequestType request) {
+    if (request.Something) {
+        await BadRequest();
+    }
+    
+    if (creditsAvailable < 0) {
+        await StatusCode(402);
+        return;
+    }
+    
+    Result = new MyResponseType();
+}
+```
+
+Convenience methods available are `Ok`, `NotFound`, `BadRequest`, `NoContent`, `InternalServerError`.
 
 ## Good Endpoints
 
@@ -177,8 +201,8 @@ To add validation support (via FluentValidation), add [Reaper.Validation]() from
 
 Before your call to `UseReaper()`, also add `UseReaperValidation()`.
 
-You can then create validators (**NOTE** They must be in the same namespace as the Request object currently) by extending
-from `ReaperValidator<TRequest>` and using FluentValidator just as you normally would:
+You can then create validators by extending  from `RequestValidator<TRequest>` and using FluentValidator just as you
+normally would:
 
 ```csharp
 public class TestRequest
@@ -186,7 +210,7 @@ public class TestRequest
     public string Test { get; set; }
 }
 
-public class TestRequestValidator : ReaperValidator<TestRequest>
+public class TestRequestValidator : RequestValidator<TestRequest>
 {
     public TestRequestValidator()
     {
@@ -195,8 +219,8 @@ public class TestRequestValidator : ReaperValidator<TestRequest>
 }
 ```
 
-Note again that validators are created as singletons. You can currently only define simple validation rules, but soon
-the same type of mapping will be applied as for endpoints (reusing `[ReaperScoped]`).
+Note again that validators are created as singletons so don't maintain state in your validator. Soon, the same type of
+mapping will be applied as for endpoints (reusing `[ReaperScoped]`).
 
 Validation results are formatted using a compatible version of the
 [RFC7807 Problem Details](https://datatracker.ietf.org/doc/html/rfc7807).
@@ -231,7 +255,7 @@ for chaining generators that is probably going nowhere, so we'll have to wait an
 ### Implementation
 
 Your Endpoint is injected as a *singleton* by default. This means that you should not store any state in your Endpoint
-(not that you would anyway, right?). Your HandleAsync method is invoked on a per-request basis.
+(not that you would anyway, right?). Your ExecuteAsync method is invoked on a per-request basis.
 
 To resolve services further services (scoped etc), use the `Resolve<TService>()` method (which includes singletons etc).
 
@@ -249,7 +273,7 @@ and constructor injection will work the same way as you may be familiar with.
 
 ### What's coming
 
-- [ ] Convenience methods for sending responses, where the type is too restrictive
+- [x] Convenience methods for sending responses, where the type is too restrictive
 - [x] Ability to bind Request object from route, etc (e.g per-prop `[FromRoute]`)
 - [ ] Automatic (and customisable) Mapper support
 - [x] Automatic generation of Source Generatable DTOs (Request/Response)

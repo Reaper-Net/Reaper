@@ -5,9 +5,10 @@ namespace Reaper.TestWeb.Endpoints.ReaperEndpoint_ReqResp;
 [ReaperRoute(HttpVerbs.Post, "/rerr/fromsource/{test}/{anothertest}")]
 public class FromSourcesEndpoint : ReaperEndpoint<FromSourcesEndpoint.FromSourceRequestResponse, FromSourcesEndpoint.FromSourceRequestResponse>
 {
-    public override Task<FromSourceRequestResponse> HandleAsync(FromSourceRequestResponse request)
+    public override Task ExecuteAsync(FromSourceRequestResponse request)
     {
-        return Task.FromResult(request);
+        Result = request;
+        return Task.CompletedTask;
     }
 
     public class FromSourceRequestResponse

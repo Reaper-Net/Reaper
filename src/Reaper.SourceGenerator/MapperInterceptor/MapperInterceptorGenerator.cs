@@ -52,7 +52,7 @@ internal class MapperInterceptorGenerator(ImmutableArray<ReaperDefinition> endpo
             codeWriter.Append(endpoint.RequestTypeName);
             codeWriter.Append(" req");
         }
-        codeWriter.Append(") => await svc.HandleAsync(");
+        codeWriter.Append(") => await svc.ExecuteAsync(");
         if (endpoint.HasRequest)
         {
             codeWriter.Append("req");
@@ -204,12 +204,13 @@ internal class MapperInterceptorGenerator(ImmutableArray<ReaperDefinition> endpo
 
             if (endpoint.HasResponse)
             {
-                codeWriter.Append("var response = await endpoint.HandleAsync(");
+                codeWriter.Append("await endpoint.ExecuteAsync(");
                 if (endpoint.HasRequest)
                 {
                     codeWriter.Append("request");
                 }
                 codeWriter.AppendLine(");");
+                codeWriter.AppendLine("var response = endpoint.Result;");
                 
                 switch(endpoint.ResponseOptimisationType)
                 {
@@ -217,18 +218,18 @@ internal class MapperInterceptorGenerator(ImmutableArray<ReaperDefinition> endpo
                         codeWriter.AppendLine("await ResponseHelpers.ExecuteReturnAsync(response, ctx, jsonTypeInfoResponse);");
                         break;
                     case ResponseOptimisationType.StringResponse:
-                        codeWriter.AppendLine("await ctx.Response.WriteAsync(response);");
+                        codeWriter.AppendLine("await ctx.Response.WriteAsync(response ?? string.Empty);");
                         break;
                 }
             }
             else
             {
-                codeWriter.Append("await endpoint.HandleAsync(request);");
+                codeWriter.Append("await endpoint.ExecuteAsync(request);");
             }
         }
         else
         {
-            codeWriter.AppendLine("await endpoint.HandleAsync();");
+            codeWriter.AppendLine("await endpoint.ExecuteAsync();");
         }
         codeWriter.CloseBlock();
         
@@ -323,7 +324,6 @@ internal class MapperInterceptorGenerator(ImmutableArray<ReaperDefinition> endpo
             codeWriter.AppendLine("var jsonOptions = app.Services.GetService<IOptions<JsonOptions>>()?.Value ?? ReaperEndpointMapper.FallbackJsonOptions;");
             codeWriter.AppendLine("var jsonSerializerOptions = jsonOptions.SerializerOptions;");
         }
-
 
         foreach (var endpoint in validEndpoints)
         {

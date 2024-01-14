@@ -6,7 +6,7 @@ namespace Reaper.TestWeb.Endpoints.ReaperEndpointRX;
 [ReaperRoute(HttpVerbs.Post, "/rerx/validator")]
 public class ValidatorWriteEndpoint : ReaperEndpointRX<ValidatorWriteRequest>
 {
-    public override Task HandleAsync(ValidatorWriteRequest request)
+    public override Task ExecuteAsync(ValidatorWriteRequest request)
     {
         return Context.Response.WriteAsync(request.Message!);
     }

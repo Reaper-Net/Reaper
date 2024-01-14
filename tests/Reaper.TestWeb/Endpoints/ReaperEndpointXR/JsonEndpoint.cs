@@ -3,12 +3,13 @@ namespace Reaper.TestWeb.Endpoints.ReaperEndpointXR;
 [ReaperRoute(HttpVerbs.Get, "/rexr/json")]
 public class JsonEndpoint : ReaperEndpointXR<JsonEndpoint.JsonResponse>
 {
-    public override Task<JsonResponse> HandleAsync()
+    public override Task ExecuteAsync()
     {
-        return Task.FromResult(new JsonResponse
+        Result = new JsonResponse
         {
             Message = "Hello, World!"
-        });
+        };
+        return Task.CompletedTask;
     }
 
     public class JsonResponse

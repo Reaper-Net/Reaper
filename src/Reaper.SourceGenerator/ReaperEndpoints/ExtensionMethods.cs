@@ -96,6 +96,30 @@ internal static class ExtensionMethods
 
         return default;
     }
+
+    internal static (bool valid, ReaperValidatorDefinition? definition) GetValidReaperValidatorDefinition(this GeneratorSyntaxContext ctx, CancellationToken ct)
+    {
+        var wellKnownTypes = WellKnownTypes.GetOrCreate(ctx.SemanticModel.Compilation);
+        // Reaper.Validation is not added
+        if (wellKnownTypes.ReaperRequestValidator == null)
+        {
+            return (false, null);
+        }
+        var symbol = ctx.SemanticModel.GetDeclaredSymbol(ctx.Node, ct) as INamedTypeSymbol;
+        
+        var baseSymbol = symbol?.BaseType;
+        if (baseSymbol!.EqualsWithoutGeneric(wellKnownTypes.ReaperRequestValidator!))
+        {
+            var requestType = baseSymbol.TypeArguments[0];
+            return (true, new ReaperValidatorDefinition
+            {
+                Validator = symbol,
+                RequestSymbol = requestType
+            });
+        }
+
+        return (false, null);
+    }
     
     internal static (bool valid, ReaperDefinition? definition) GetValidReaperDefinition(this GeneratorSyntaxContext ctx, CancellationToken ct)
     {
@@ -107,7 +131,7 @@ internal static class ExtensionMethods
         if (baseBaseSymbol?.Equals(wellKnownTypes.ReaperEndpointBase, SymbolEqualityComparer.Default) == true)
         {
             bool isRequest = !baseSymbol!.EqualsWithoutGeneric(wellKnownTypes.ReaperEndpointXR);
-            ITypeSymbol? request = default, validator = default, response = default;
+            ITypeSymbol? request = default, response = default;
             
             foreach (var typeArg in baseSymbol!.TypeArguments)
             {
@@ -115,8 +139,6 @@ internal static class ExtensionMethods
                 {
                     request = typeArg;
                     isRequest = false;
-                    
-                    validator = typeArg.ContainingNamespace.FindValidatorForRequest(wellKnownTypes, typeArg);
                 }
                 else
                 {
@@ -145,7 +167,7 @@ internal static class ExtensionMethods
 
             if (request != null)
             {
-                requestTypeMap = new RequestTypeMap(request, wellKnownTypes, validator);
+                requestTypeMap = new RequestTypeMap(request, wellKnownTypes);
             }
 
             var optimisationType = ResponseOptimisationType.None;

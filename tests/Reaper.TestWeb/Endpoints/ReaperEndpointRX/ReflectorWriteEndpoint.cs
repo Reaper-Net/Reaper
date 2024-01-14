@@ -3,7 +3,7 @@ namespace Reaper.TestWeb.Endpoints.ReaperEndpointRX;
 [ReaperRoute(HttpVerbs.Post, "/rerx/reflector")]
 public class ReflectorWriteEndpoint : ReaperEndpointRX<ReflectorWriteEndpoint.ReflectorWriteRequest>
 {
-    public override Task HandleAsync(ReflectorWriteRequest request)
+    public override Task ExecuteAsync(ReflectorWriteRequest request)
     {
         return Context.Response.WriteAsync(request.Message);
     }
