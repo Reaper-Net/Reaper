@@ -211,6 +211,9 @@ internal class MapperInterceptorGenerator(ImmutableArray<ReaperDefinition> endpo
                 }
                 codeWriter.AppendLine(");");
                 codeWriter.AppendLine("var response = endpoint.Result;");
+                // TODO - This should be a context item, to consider with context changes / feature set for execution
+                codeWriter.AppendLine("if (!endpoint.Response.HasStarted)");
+                codeWriter.OpenBlock();
                 
                 switch(endpoint.ResponseOptimisationType)
                 {
@@ -221,6 +224,8 @@ internal class MapperInterceptorGenerator(ImmutableArray<ReaperDefinition> endpo
                         codeWriter.AppendLine("await ctx.Response.WriteAsync(response ?? string.Empty);");
                         break;
                 }
+                
+                codeWriter.CloseBlock();
             }
             else
             {

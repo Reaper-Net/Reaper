@@ -55,3 +55,20 @@ public class Status404WriterEndpoint : Reaper.ReaperEndpoint
         return this.NotFound("Hello, World!");
     }
 }
+
+[ReaperRoute(HttpVerbs.Get, "/re/j200")]
+public class Status200JsonWriterEndpoint : Reaper.ReaperEndpointXR<SampleResponse>
+{
+    public override async Task ExecuteAsync()
+    {
+        await this.Ok(new SampleResponse
+        {
+            Message = "Hello, World!"
+        });
+    }
+}
+
+public class SampleResponse
+{
+    public string Message { get; set; }
+}

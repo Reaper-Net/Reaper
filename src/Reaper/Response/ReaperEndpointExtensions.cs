@@ -2,6 +2,7 @@ using System.Text.Json.Serialization.Metadata;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Json;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Reaper.RequestDelegateSupport;
 
 namespace Reaper.Response;
@@ -11,7 +12,6 @@ public static class ReaperEndpointExtensions
     public static async Task StatusCode(this IReaperEndpoint endpoint, int statusCode)
     {
         endpoint.Response.StatusCode = statusCode;
-        await endpoint.Response.StartAsync();
     }
     
     public static async Task StatusCode<T>(this IReaperEndpoint endpoint, int statusCode, T? result = default)
@@ -97,7 +97,7 @@ public static class ReaperEndpointExtensions
         }
         else
         {
-            var jsonOptions = httpContext.RequestServices.GetRequiredService<JsonOptions>();
+            var jsonOptions = httpContext.RequestServices.GetRequiredService<IOptions<JsonOptions>>().Value;
             var jsonTypeInfo = (JsonTypeInfo<T?>)jsonOptions.SerializerOptions.GetTypeInfo(typeof(T));
             await ResponseHelpers.WriteJsonResponseAsync(httpContext.Response, response, jsonTypeInfo);
         }

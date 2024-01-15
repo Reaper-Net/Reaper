@@ -1,4 +1,6 @@
 using System.Net;
+using System.Net.Http.Json;
+using Reaper.TestWeb.Endpoints.ReaperEndpoint;
 
 namespace IntegrationTests.Tests;
 
@@ -89,5 +91,17 @@ public abstract class ReaperEndpointTests(HttpClient client)
         var resp = await client.GetAsync("/re/w404");
         Assert.Equal(HttpStatusCode.NotFound, resp.StatusCode);
         Assert.Equal("Hello, World!", await resp.Content.ReadAsStringAsync());
+    }
+
+    [Fact]
+    public async Task Status200JsonWriterIs200()
+    {
+        var resp = await client.GetAsync("/re/j200");
+        Assert.Equal(HttpStatusCode.OK, resp.StatusCode);
+        var sampleResponse = new SampleResponse
+        {
+            Message = "Hello, World!"
+        };
+        Assert.Equal(sampleResponse, await resp.Content.ReadFromJsonAsync<SampleResponse>());
     }
 }
