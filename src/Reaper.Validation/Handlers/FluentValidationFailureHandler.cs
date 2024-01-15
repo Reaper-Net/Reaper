@@ -38,17 +38,19 @@ public class FluentValidationFailureHandler(IReaperExecutionContextProvider reap
                 httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
                 await ResponseHelpers.ExecuteReturnAsync(new ProblemDetails()
                 {
-                    Type = "https://reaper.divergent.dev/validation/body-required-not-provided",
+                    Type = "https://reaper.divergent.dev/validation/body-required",
                     Title = "Request body is required.",
                 }, httpContext, jsonTypeInfo, "application/problem+json");
                 break;
             case RequestValidationFailureType.UserDefinedValidationFailure:
                 httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
+                var validationFailures = validationContext.ValidationResult!.Errors.GroupBy(m => m.PropertyName)
+                    .ToDictionary(m => m.Key, m => string.Join(", ", m.Select(n => n.ErrorMessage)));
                 await ResponseHelpers.ExecuteReturnAsync(new ValidationProblemDetails
                 {
                     Type = "https://reaper.divergent.dev/validation/failure",
                     Title = "Validation failed for this request.",
-                    ValidationFailures = validationContext.ValidationResult!.Errors.ToDictionary(m => m.PropertyName, m => m.ErrorMessage)
+                    ValidationFailures = validationFailures
                 }, httpContext, validationJsonTypeInfo, "application/problem+json");
                 break;
             default:
