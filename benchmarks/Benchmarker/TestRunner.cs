@@ -12,8 +12,9 @@ using Spectre.Console;
 
 namespace Benchmarker;
 
-public class TestRunner()
+public class TestRunner(int threads = 10, int http = 100, int timeinSeconds = 7)
 {
+    
     private static readonly IFutureDockerImage wrkImage = new ImageFromDockerfileBuilder()
         .WithDockerfileDirectory(Paths.ProjectPath, string.Empty)
         .WithDockerfile("wrk.dockerfile")
@@ -70,7 +71,7 @@ public class TestRunner()
                         ctx.Spinner(Spinner.Known.Monkey);
                         ctx.Status("Starting wrk & executing high load simulation...");
                         await containers.wrk.StartAsync();
-                        await Task.Delay(7000);
+                        await Task.Delay(timeinSeconds * 1175);
                         requestsSec = await GetTimerFromLogsAsDecimalAsync(wrk, "Requests/sec:");
                         await wrk.StopAsync();
                     }
@@ -168,7 +169,7 @@ public class TestRunner()
     private (IContainer wrk, IContainer app) CreateContainersWithNetworkAsync(IImage appImage, INetwork network)
     {
         var wrk = new ContainerBuilder()
-            .WithCommand("wrk", "-t5", "-c25", "-d5s", "http://reaper-test-app:8080/ep")
+            .WithCommand("wrk", $"-t{threads}", $"-c{http}", $"-d{timeinSeconds}s", "http://reaper-test-app:8080/ep")
             .WithImage(wrkImage)
             .WithName("reaper-test-wrk")
             .WithNetwork(network)

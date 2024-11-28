@@ -1,4 +1,4 @@
-﻿FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+﻿FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 WORKDIR /src
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
@@ -6,7 +6,7 @@ RUN apt-get update \
 COPY benchmarks/BenchmarkWeb .
 RUN dotnet publish "BenchmarkWeb.csproj" -c Release -o /app/publish /p:DefineConstants=MINIMAL /p:PublishAot=true
 
-FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS final
+FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS final
 EXPOSE 8080
 WORKDIR /app
 COPY --from=build /app/publish .

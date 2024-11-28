@@ -1,0 +1,8 @@
+Framework,Startup Time,Memory Usage (MiB) - Startup,Memory Usage (MiB) - Load Test,Requests/sec
+carter,77,16.1,62.3,357696.74
+controllers,102,18.36,73.97,278958.44
+fastendpoints,96,18,67.23,327575.66
+minimal,82,14.43,61.89,382918.32
+minimal-aot,16,10.37,36.88,426205.32
+reaper,82,15.27,69.95,390403.12
+reaper-aot,13,10.43,51.65,451385.54
