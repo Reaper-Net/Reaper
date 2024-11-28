@@ -262,7 +262,7 @@ internal class MapperInterceptorGenerator(ImmutableArray<ReaperDefinition> endpo
         codeWriter.Append(key);
         codeWriter.Append("\", out var ");
         codeWriter.Append(prop.Name);
-        codeWriter.AppendLine("Src) && RequestHelpers.TryConvertValue<");
+        codeWriter.Append("Src) && RequestHelpers.TryConvertValue<");
         codeWriter.Append(useType.Name);
         codeWriter.Append(">(");
         codeWriter.Append(prop.Name);
@@ -320,6 +320,8 @@ internal class MapperInterceptorGenerator(ImmutableArray<ReaperDefinition> endpo
         codeWriter.AppendLine("var loggerFactory = app.Services.GetRequiredService<ILoggerFactory>();");
         codeWriter.AppendLine("var logger = loggerFactory.CreateLogger(\"Reaper\");");
         codeWriter.AppendLine("var endpointLog = LoggerMessage.Define<Type>(LogLevel.Debug, new EventId(1, \"ReaperEndpoint\"), \"Reaper endpoint {EndpointClass} mapped w/ injection\");");
+        // Can we eke out more performance by grabbing all the singleton endpoints up front?
+        
         codeWriter.AppendLine("Debug(\"💀 Reaper is mapping endpoints\");");
         codeWriter.AppendLine(string.Empty);
         if (validEndpoints.Any(m => !m.RequiresReaperHandler))
